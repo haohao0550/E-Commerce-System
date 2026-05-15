@@ -11,6 +11,12 @@ const swaggerOptions: swaggerJsdoc.Options = {
       description:
         'Sprint 2 REST API — Auth, Users, Products, Orders with JWT authentication'
     },
+    servers: [
+      {
+        url: '/api/v1',
+        description: 'Development server'
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {

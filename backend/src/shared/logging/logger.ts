@@ -1,28 +1,24 @@
-import pino from 'pino';
-import { appConfig } from '@/shared/configs/app.config.js';
+import pino from 'pino'
 
 export const logger = pino({
-    level: appConfig.data?.LOG_LEVEL ?? 'info',
-    base: { service: 'api', env: appConfig.data?.NODE_ENV },
-    transport: {
-        targets: [
-            ...(appConfig.data?.NODE_ENV !== 'production'
-                ? [
-                      {
-                          target: 'pino-pretty',
-                          options: { colorize: true },
-                      },
-                  ]
-                : []),
-            {
+    level: process.env.LOG_LEVEL || 'info',
+
+    base: {
+        service: 'ecommerce-api',
+        env: process.env.NODE_ENV,
+    },
+
+    timestamp: pino.stdTimeFunctions.isoTime,
+
+    transport:
+        process.env.NODE_ENV !== 'production'
+            ? {
                 target: 'pino-pretty',
                 options: {
-                    destination: './src/public/logs/app.log',
-                    colorize: false,
+                    colorize: true,
                     translateTime: 'SYS:standard',
                     ignore: 'pid,hostname',
                 },
-            },
-        ],
-    },
-});
+            }
+            : undefined,
+})

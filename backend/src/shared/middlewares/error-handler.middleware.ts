@@ -11,30 +11,31 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     if (err instanceof ZodError) {
         return res.status(400).json({
             success: false,
-            statusCode: 400,
-            code: 'VALIDATION_ERROR',
-            message: 'Validation Error',
-            errors: err.flatten().fieldErrors,
-            reqId: req.id,
+            message: 'Dữ liệu không hợp lệ',
+            error: {
+                code: 'VALIDATION_ERROR',
+                details: err.flatten().fieldErrors,
+            }
         });
     }
 
     if (err instanceof appError.AppError) {
         return res.status(err.statusCode).json({
             success: false,
-            statusCode: err.statusCode,
-            code: err.code,
             message: err.message,
-            ...(err.details ? { details: err.details } : {}),
-            reqId: req.id,
+            error: {
+                code: err.code,
+                details: err.details || [],
+            }
         });
     }
 
     return res.status(500).json({
         success: false,
-        statusCode: 500,
-        code: 'INTERNAL_ERROR',
-        message: 'Something went wrong',
-        reqId: req.id,
+        message: 'Có lỗi xảy ra hệ thống',
+        error: {
+            code: 'INTERNAL_ERROR',
+            details: [],
+        }
     });
 };
