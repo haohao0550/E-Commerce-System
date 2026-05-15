@@ -5,6 +5,8 @@ dotenv.config();
 
 const envSchema = zod.object({
     PORT: zod.string().default('3000'),
+    NODE_ENV: zod.string().default('development'),
+    LOG_LEVEL: zod.string().default('info'),
 
     SUPABASE_URL: zod.string(),
     DATABASE_URL: zod.string(),
