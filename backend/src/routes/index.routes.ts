@@ -3,7 +3,7 @@ import healthRoutes from '@/modules/healths/index.js';
 import authRoutes from '@/modules/auths/index.js';
 import userRoutes from '@/modules/users/index.js';
 import adminUserRoutes from '@/modules/users/index.js';
-
+import addressRoutes from '@/modules/addresses/index.js';
 
 const router = Router();
 
@@ -11,5 +11,6 @@ router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/admin/users', adminUserRoutes);
+router.use('/addresses', addressRoutes);
 
 export default router;
