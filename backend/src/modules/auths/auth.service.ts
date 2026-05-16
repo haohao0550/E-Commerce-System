@@ -69,6 +69,10 @@ export class AuthService {
             throw new UnauthorizedError('Invalid email or password');
         }
 
+        if (user.isDeleted) {
+            throw new UnauthorizedError('User account has been deleted');
+        }
+
         // Verify password with argon2
         const isPasswordValid = await argon2.verify(user.password, input.password);
         if (!isPasswordValid) {
