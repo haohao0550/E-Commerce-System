@@ -5,6 +5,7 @@ import { registerSchema, loginSchema } from './auth.schema.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { authLimiter } from '@/shared/middlewares/rate-limit.middleware.js';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
+import { asyncHandler } from '@/shared/errors/async-handler.error.js';
 
 const router = Router();
 const authController = new AuthController();
@@ -13,7 +14,7 @@ router.post(
     '/register',
     validateBody(registerSchema),
     auditLog('REGISTER'),
-    authController.register
+    asyncHandler(authController.register)
 );
 
 router.post(
@@ -21,13 +22,13 @@ router.post(
     authLimiter,
     validateBody(loginSchema),
     auditLog('LOGIN'),
-    authController.login
+    asyncHandler(authController.login)
 );
 
 router.post(
     '/refresh',
     authLimiter,
-    authController.refreshToken
+    asyncHandler(authController.refreshToken)
 );
 
 router.post(
@@ -35,7 +36,7 @@ router.post(
     authenticate,
     requireRole('USER', 'ADMIN'),
     auditLog('LOGOUT'),
-    authController.logout
+    asyncHandler(authController.logout)
 );
 
 export default router;
