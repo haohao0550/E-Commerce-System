@@ -39,3 +39,9 @@ export class InternalServerError extends AppError {
         super(message, 500, 'INTERNAL_SERVER_ERROR', details);
     }
 }
+
+export class BadRequestError extends AppError {
+    constructor(message = 'Bad request', details?: unknown) {
+        super(message, 400, 'BAD_REQUEST', details);
+    }
+}
