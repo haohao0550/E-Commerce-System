@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import healthRoutes from '@/modules/healths/index.js';
-import authRoutes from '@/modules/auths/auth.route.js';
+import authRoutes from '@/modules/auths/index.js';
 
 
 const router = Router();

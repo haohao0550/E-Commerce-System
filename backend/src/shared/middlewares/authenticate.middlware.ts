@@ -68,3 +68,12 @@ export const authenticate = async (
         next(error);
     }
 };
+
+export const requireRole = (...roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!roles.includes(req.user?.role!)) {
+            return next(new AppError('Forbidden', 403, 'FORBIDDEN'));
+        }
+        next();
+    };
+};

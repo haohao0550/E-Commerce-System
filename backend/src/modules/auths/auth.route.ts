@@ -4,7 +4,7 @@ import { validateBody } from '@/shared/middlewares/validate.middleware.js';
 import { registerSchema, loginSchema } from './auth.schema.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { authLimiter } from '@/shared/middlewares/rate-limit.middleware.js';
-import { authenticate } from '@/shared/middlewares/authenticate.middlware.js';
+import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
 
 const router = Router();
 const authController = new AuthController();
@@ -33,6 +33,7 @@ router.post(
 router.post(
     '/logout',
     authenticate,
+    requireRole('USER', 'ADMIN'),
     auditLog('LOGOUT'),
     authController.logout
 );
