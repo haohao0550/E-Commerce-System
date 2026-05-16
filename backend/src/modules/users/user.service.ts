@@ -1,7 +1,7 @@
 import * as argon2 from 'argon2';
 import { Prisma } from '@/generated/prisma/client.js';
 import { AppError, NotFoundError, UnauthorizedError } from '@/shared/errors/app.error.js';
-import { ChangePasswordInput, UpdateProfileInput } from './user.dto.js';
+import { ChangePasswordInput, GetUsersQuery, UpdateProfileInput, UpdateUserRoleInput } from './user.dto.js';
 import { UserRepo } from './user.repo.js';
 
 export class UserService {
@@ -21,6 +21,14 @@ export class UserService {
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+        };
+    }
+
+    private toAdminUser(user: any) {
+        return {
+            ...this.toPublicUser(user),
+            isDeleted: user.isDeleted,
+            deletedAt: user.deletedAt,
         };
     }
 
@@ -98,5 +106,90 @@ export class UserService {
 
         await this.userRepo.softDeleteById(userId);
         await this.userRepo.revokeRefreshTokens(userId);
+    }
+
+    async getUsers(query: GetUsersQuery) {
+        const where: Prisma.UserWhereInput = {};
+
+        if (query.search) {
+            where.OR = [
+                { email: { contains: query.search, mode: 'insensitive' } },
+                { name: { contains: query.search, mode: 'insensitive' } },
+                { phone: { contains: query.search, mode: 'insensitive' } },
+            ];
+        }
+
+        if (query.role) {
+            where.role = query.role;
+        }
+
+        if (typeof query.isDeleted === 'boolean') {
+            where.isDeleted = query.isDeleted;
+        }
+
+        const skip = (query.page - 1) * query.limit;
+        const [users, total] = await Promise.all([
+            this.userRepo.findMany(where, skip, query.limit),
+            this.userRepo.count(where),
+        ]);
+
+        return {
+            users: users.map((user) => this.toAdminUser(user)),
+            pagination: {
+                page: query.page,
+                limit: query.limit,
+                total,
+                totalPages: Math.ceil(total / query.limit),
+            },
+        };
+    }
+
+    async getUserById(id: string) {
+        const user = await this.userRepo.findById(id);
+        if (!user) {
+            throw new NotFoundError('User');
+        }
+
+        return this.toAdminUser(user);
+    }
+
+    async updateUserRole(id: string, input: UpdateUserRoleInput) {
+        const user = await this.userRepo.findById(id);
+        if (!user) {
+            throw new NotFoundError('User');
+        }
+
+        const updatedUser = await this.userRepo.updateById(id, { role: input.role });
+        return this.toAdminUser(updatedUser);
+    }
+
+    async deleteUserByAdmin(id: string) {
+        const user = await this.userRepo.findById(id);
+        if (!user) {
+            throw new NotFoundError('User');
+        }
+
+        if (user.isDeleted) {
+            return this.toAdminUser(user);
+        }
+
+        const deletedUser = await this.userRepo.softDeleteById(id);
+        await this.userRepo.revokeRefreshTokens(id);
+
+        return this.toAdminUser(deletedUser);
+    }
+
+    async restoreUserByAdmin(id: string) {
+        const user = await this.userRepo.findById(id);
+        if (!user) {
+            throw new NotFoundError('User');
+        }
+
+        if (!user.isDeleted) {
+            return this.toAdminUser(user);
+        }
+
+        const restoredUser = await this.userRepo.restoreById(id);
+        return this.toAdminUser(restoredUser);
     }
 }

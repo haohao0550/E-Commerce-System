@@ -81,4 +81,85 @@ export class UserController {
             next(error);
         }
     };
+
+    getUsers = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            req.log?.info({ query: req.validatedQuery }, 'Admin getting users');
+
+            const result = await this.userService.getUsers(req.validatedQuery);
+
+            res.status(200).json({
+                success: true,
+                message: 'Get users successful',
+                data: result,
+            });
+        } catch (error: any) {
+            req.log?.error({ error: error.message }, 'Error while getting users');
+            next(error);
+        }
+    };
+
+    getUserById = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params as { id: string };
+            const user = await this.userService.getUserById(id);
+
+            res.status(200).json({
+                success: true,
+                message: 'Get user successful',
+                data: { user },
+            });
+        } catch (error: any) {
+            req.log?.error({ error: error.message }, 'Error while getting user');
+            next(error);
+        }
+    };
+
+    updateUserRole = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params as { id: string };
+            const user = await this.userService.updateUserRole(id, req.body);
+
+            res.status(200).json({
+                success: true,
+                message: 'Update user role successful',
+                data: { user },
+            });
+        } catch (error: any) {
+            req.log?.error({ error: error.message }, 'Error while updating user role');
+            next(error);
+        }
+    };
+
+    deleteUserByAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params as { id: string };
+            const user = await this.userService.deleteUserByAdmin(id);
+
+            res.status(200).json({
+                success: true,
+                message: 'Delete user successful',
+                data: { user },
+            });
+        } catch (error: any) {
+            req.log?.error({ error: error.message }, 'Error while deleting user');
+            next(error);
+        }
+    };
+
+    restoreUserByAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params as { id: string };
+            const user = await this.userService.restoreUserByAdmin(id);
+
+            res.status(200).json({
+                success: true,
+                message: 'Restore user successful',
+                data: { user },
+            });
+        } catch (error: any) {
+            req.log?.error({ error: error.message }, 'Error while restoring user');
+            next(error);
+        }
+    };
 }

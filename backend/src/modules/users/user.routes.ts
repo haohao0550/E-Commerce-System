@@ -26,6 +26,13 @@ router.patch(
     userController.changePassword
 );
 
+router.patch(
+    '/me/change-password',
+    validateBody(changePasswordSchema),
+    auditLog('CHANGE_PASSWORD'),
+    userController.changePassword
+);
+
 router.delete(
     '/me',
     auditLog('DELETE_ACCOUNT'),

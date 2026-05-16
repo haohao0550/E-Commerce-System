@@ -5,6 +5,23 @@ import { IUserRepo } from './user.repo.interface.js';
 export class UserRepo implements IUserRepo {
     private prisma: PrismaClient = prisma;
 
+    async findMany(where: Prisma.UserWhereInput, skip: number, take: number): Promise<User[]> {
+        return this.prisma.user.findMany({
+            where,
+            skip,
+            take,
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
+    async count(where: Prisma.UserWhereInput): Promise<number> {
+        return this.prisma.user.count({
+            where,
+        });
+    }
+
     async findById(id: string): Promise<User | null> {
         return this.prisma.user.findUnique({
             where: { id },
@@ -45,6 +62,16 @@ export class UserRepo implements IUserRepo {
             data: {
                 isDeleted: true,
                 deletedAt: new Date(),
+            },
+        });
+    }
+
+    async restoreById(id: string): Promise<User> {
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                isDeleted: false,
+                deletedAt: null,
             },
         });
     }
