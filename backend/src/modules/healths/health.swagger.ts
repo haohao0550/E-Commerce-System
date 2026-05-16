@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/v1/health:
+ * /health:
  *   get:
  *     summary: Check API health (public endpoint)
  *     tags: [Health]
