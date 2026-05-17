@@ -323,6 +323,57 @@
  *       404:
  *         description: Address not found
  *
+ * /addresses/default:
+ *   get:
+ *     summary: Get default address
+ *     tags: [Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Get default address successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     fullName:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     street:
+ *                       type: string
+ *                     ward:
+ *                       type: string
+ *                       nullable: true
+ *                     district:
+ *                       type: string
+ *                       nullable: true
+ *                     province:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Address not found
+ *
  * /addresses/{id}/default:
  *   patch:
  *     summary: Set default address by ID
