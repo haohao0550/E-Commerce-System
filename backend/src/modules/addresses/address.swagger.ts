@@ -31,6 +31,59 @@
  *     responses:
  *       200:
  *         description: Get all addresses successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             format: uuid
+ *                           fullName:
+ *                             type: string
+ *                           phone:
+ *                             type: string
+ *                           street:
+ *                             type: string
+ *                           ward:
+ *                             type: string
+ *                             nullable: true
+ *                           district:
+ *                             type: string
+ *                             nullable: true
+ *                           province:
+ *                             type: string
+ *                           isDefault:
+ *                             type: boolean
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                           updatedAt:
+ *                             type: string
+ *                             format: date-time
+ *                     meta:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         totalPages:
+ *                           type: integer
  *       401:
  *         description: Unauthorized
  *
@@ -70,6 +123,43 @@
  *     responses:
  *       201:
  *         description: Create address successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     fullName:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     street:
+ *                       type: string
+ *                     ward:
+ *                       type: string
+ *                       nullable: true
+ *                     district:
+ *                       type: string
+ *                       nullable: true
+ *                     province:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
  *       400:
  *         description: Validation error
  *       401:
@@ -91,6 +181,43 @@
  *     responses:
  *       200:
  *         description: Get address by ID successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     fullName:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     street:
+ *                       type: string
+ *                     ward:
+ *                       type: string
+ *                       nullable: true
+ *                     district:
+ *                       type: string
+ *                       nullable: true
+ *                     province:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
  *       401:
  *         description: Unauthorized
  *       404:
@@ -132,6 +259,43 @@
  *     responses:
  *       200:
  *         description: Update address successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     fullName:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     street:
+ *                       type: string
+ *                     ward:
+ *                       type: string
+ *                       nullable: true
+ *                     district:
+ *                       type: string
+ *                       nullable: true
+ *                     province:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
  *       400:
  *         description: Validation error
  *       401:
@@ -154,6 +318,78 @@
  *     responses:
  *       200:
  *         description: Delete address successful
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Address not found
+ *
+ * /addresses/{id}/default:
+ *   patch:
+ *     summary: Set default address by ID
+ *     tags: [Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isDefault
+ *             properties:
+ *               isDefault:
+ *                 type: boolean
+ *                 enum: [true]
+ *     responses:
+ *       200:
+ *         description: Set default address successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     fullName:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     street:
+ *                       type: string
+ *                     ward:
+ *                       type: string
+ *                       nullable: true
+ *                     district:
+ *                       type: string
+ *                       nullable: true
+ *                     province:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Validation error
  *       401:
  *         description: Unauthorized
  *       404:

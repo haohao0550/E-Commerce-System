@@ -24,6 +24,10 @@ export const updateAddressSchema = zod.object({
     isDefault: zod.boolean().optional(),
 });
 
+export const setDefaultAddressSchema = zod.object({
+    isDefault: zod.literal(true),
+});
+
 export const getAddressListSchema = zod.object({
     page: zod.coerce.number().default(1),
     limit: zod.coerce.number().max(100).default(10),

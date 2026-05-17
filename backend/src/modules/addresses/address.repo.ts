@@ -5,6 +5,14 @@ import { IAddressRepo } from './address.repo.interface.js';
 export class AddressRepo implements IAddressRepo {
     private prisma: PrismaClient = prisma;
 
+    private getClient(tx?: Prisma.TransactionClient) {
+        return tx ?? this.prisma;
+    }
+
+    async transaction<T>(fn: (prisma: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+        return this.prisma.$transaction(fn);
+    }
+
     async count(where: Prisma.UserAddressWhereInput): Promise<number> {
         return this.prisma.userAddress.count({
             where,
@@ -28,15 +36,26 @@ export class AddressRepo implements IAddressRepo {
         });
     }
 
-    async create(data: Prisma.UserAddressCreateInput): Promise<UserAddress> {
-        return this.prisma.userAddress.create({
+    async create(data: Prisma.UserAddressCreateInput, tx?: Prisma.TransactionClient): Promise<UserAddress> {
+        return this.getClient(tx).userAddress.create({
             data,
         });
     }
 
-    async update(id: string, data: Prisma.UserAddressUpdateInput): Promise<UserAddress> {
-        return this.prisma.userAddress.update({
+    async update(id: string, data: Prisma.UserAddressUpdateInput, tx?: Prisma.TransactionClient): Promise<UserAddress> {
+        return this.getClient(tx).userAddress.update({
             where: { id },
+            data,
+        });
+    }
+
+    async updateMany(
+        where: Prisma.UserAddressWhereInput,
+        data: Prisma.UserAddressUpdateManyMutationInput,
+        tx?: Prisma.TransactionClient,
+    ): Promise<Prisma.BatchPayload> {
+        return this.getClient(tx).userAddress.updateMany({
+            where,
             data,
         });
     }

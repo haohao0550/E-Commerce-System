@@ -42,6 +42,15 @@ router.patch(
     asyncHandler(addressController.updateAddress.bind(addressController))
 );
 
+router.patch(
+    '/:id/default', 
+    auditLog('Set default address by ID'),
+    authenticate, 
+    validateParams(addressSchema.updateAddressParamsSchema), 
+    validateBody(addressSchema.setDefaultAddressSchema),
+    asyncHandler(addressController.updateAddress.bind(addressController))
+);
+
 router.delete(
     '/:id', 
     auditLog('Delete address by ID'),

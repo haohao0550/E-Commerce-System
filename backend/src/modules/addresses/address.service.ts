@@ -25,6 +25,19 @@ export class AddressService {
         };
     }
 
+    private unsetDefaultAddress(userId: string, tx?: Prisma.TransactionClient) {
+        const where: Prisma.UserAddressWhereInput = {
+            userId,
+            isDefault: true,
+        };
+
+        const data: Prisma.UserAddressUpdateManyMutationInput = {
+            isDefault: false,
+        };
+
+        return this.addressRepo.updateMany(where, data, tx);
+    }
+
     async getAllAddresses(userId: string, query: addressDto.GetAllAddressesQuery) {
         const { page, limit, search } = query;
         const where: Prisma.UserAddressWhereInput = {
@@ -58,13 +71,22 @@ export class AddressService {
     }
 
     async createAddress(userId: string, input: addressDto.CreateAddressInput) {
-        const address = await this.addressRepo.create({
-            ...input,
-            user : {
-                connect: {
-                    id: userId,
+        const address = await this.addressRepo.transaction(async (tx) => {
+            if (input.isDefault === true) {
+                await this.unsetDefaultAddress(userId, tx);
+            }
+
+            return this.addressRepo.create(
+                {
+                    ...input,
+                    user : {
+                        connect: {
+                            id: userId,
+                        },
+                    },
                 },
-            },
+                tx,
+            );
         });
         return this.toUserAddress(address);
     }
@@ -83,7 +105,14 @@ export class AddressService {
             throw new error.NotFoundError('Address');
         }
 
-        const updatedAddress = await this.addressRepo.update(id, input);
+        const updatedAddress = await this.addressRepo.transaction(async (tx) => {
+            if (input.isDefault === true) {
+                await this.unsetDefaultAddress(userId, tx);
+            }
+
+            return this.addressRepo.update(id, input, tx);
+        });
+
         return this.toUserAddress(updatedAddress);
     }   
 
