@@ -3,6 +3,7 @@ import { UserController } from './user.controller.js';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
 import { validateBody, validateParams, validateQuery } from '@/shared/middlewares/validate.middleware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
+import { asyncHandler } from '@/shared/errors/async-handler.error.js';
 import { getUsersQuerySchema, updateUserRoleSchema, userIdParamSchema } from './user.schema.js';
 
 const router = Router();
@@ -13,13 +14,13 @@ router.use(authenticate, requireRole('ADMIN'));
 router.get(
     '/',
     validateQuery(getUsersQuerySchema),
-    userController.getUsers
+    asyncHandler(userController.getUsers)
 );
 
 router.get(
     '/:id',
     validateParams(userIdParamSchema),
-    userController.getUserById
+    asyncHandler(userController.getUserById)
 );
 
 router.patch(
@@ -27,21 +28,21 @@ router.patch(
     validateParams(userIdParamSchema),
     validateBody(updateUserRoleSchema),
     auditLog('ADMIN_UPDATE_USER_ROLE'),
-    userController.updateUserRole
+    asyncHandler(userController.updateUserRole)
 );
 
 router.delete(
     '/:id',
     validateParams(userIdParamSchema),
     auditLog('ADMIN_DELETE_USER'),
-    userController.deleteUserByAdmin
+    asyncHandler(userController.deleteUserByAdmin)
 );
 
 router.patch(
     '/:id/restore',
     validateParams(userIdParamSchema),
     auditLog('ADMIN_RESTORE_USER'),
-    userController.restoreUserByAdmin
+    asyncHandler(userController.restoreUserByAdmin)
 );
 
 export default router;
