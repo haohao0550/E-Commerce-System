@@ -1,6 +1,4 @@
 export { CategoriesController } from './categories.controller.js'
-export { CreateCategoryDTO, UpdateCategoryDTO } from './categories.dto.js'
-export { ICategoriesRepo } from './categories.repo.interface.js'
 export { CategoriesRepo } from './categories.repo.js'
 export * from './categories.schema.js'
 export { CategoriesService } from './categories.service.js'

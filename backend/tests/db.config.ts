@@ -12,7 +12,7 @@ const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL
 
   if (!connectionString) {
-    throw new Error('Missing DATABASE_TEST_URL in .env.test')
+    throw new Error('Missing DATABASE_URL in .env.test')
   }
 
   const pool = new pg.Pool({
