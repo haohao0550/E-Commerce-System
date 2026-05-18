@@ -36,6 +36,15 @@ export class AddressRepo implements IAddressRepo {
         });
     }
 
+    async findDefaultByUserId(userId: string): Promise<UserAddress | null> {
+        return this.prisma.userAddress.findFirst({
+            where: {
+                userId,
+                isDefault: true,
+            },
+        });
+    }
+
     async create(data: Prisma.UserAddressCreateInput, tx?: Prisma.TransactionClient): Promise<UserAddress> {
         return this.getClient(tx).userAddress.create({
             data,

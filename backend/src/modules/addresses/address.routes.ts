@@ -26,6 +26,13 @@ router.post(
 );
 
 router.get(
+    '/default', 
+    auditLog('Get default address'),
+    authenticate,
+    asyncHandler(addressController.getDefaultAddress.bind(addressController))
+);
+
+router.get(
     '/:id',  
     auditLog('Get address by ID'),
     authenticate, 

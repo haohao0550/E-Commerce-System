@@ -45,6 +45,18 @@ export class AddressController {
         });
     };
 
+    async getDefaultAddress(req: Request, res: Response, next: NextFunction) {
+        const { userId } = req.user;
+
+        const address = await this.addressService.getDefaultAddress(userId);
+
+        res.status(200).json({
+            success: true,
+            message: "Get default address successful",
+            data: address,
+        });
+    }
+
     async updateAddress(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.user;
         const { id } = req.params;

@@ -99,6 +99,14 @@ export class AddressService {
         return this.toUserAddress(address);
     }
 
+    async getDefaultAddress(userId: string) {
+        const address = await this.addressRepo.findDefaultByUserId(userId);
+        if (!address) {
+            throw new error.NotFoundError('Default address');
+        }
+        return this.toUserAddress(address);
+    }
+
     async updateAddress(userId: string, id: string, input: addressDto.UpdateAddressInput) {
         const address = await this.addressRepo.findById(id);
         if (!address || address.userId !== userId) {
