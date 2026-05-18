@@ -4,9 +4,9 @@ import authRoutes from '@/modules/auths/index.js';
 import userRoutes from '@/modules/users/index.js';
 import adminUserRoutes from '@/modules/users/index.js';
 import addressRoutes from '@/modules/addresses/index.js';
-import uploadRoutes from '@/modules/upload/upload.route.js';
-import categoryRoutes from '@/modules/categories/categories.route.js';
-import productRoutes from '@/modules/products/products.route.js';
+import uploadRoutes from '@/modules/upload/index.js';
+import categoryRoutes from '@/modules/categories/index.js';
+import productRoutes from '@/modules/products/index.js';
 import cartRoutes from '@/modules/carts/index.js';
 import {
   productVariantsRoute,
