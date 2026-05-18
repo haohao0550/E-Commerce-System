@@ -7,6 +7,7 @@ import addressRoutes from '@/modules/addresses/index.js';
 import uploadRoutes from '@/modules/upload/upload.route.js';
 import categoryRoutes from '@/modules/categories/categories.route.js';
 import productRoutes from '@/modules/products/products.route.js';
+import cartRoutes from '@/modules/carts/index.js';
 import {
   productVariantsRoute,
   adminProductVariantsRoute
@@ -22,6 +23,7 @@ router.use('/addresses', addressRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
+router.use('/carts', cartRoutes);
 router.use(productVariantsRoute)
 router.use('/admin', adminProductVariantsRoute)
 
