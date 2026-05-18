@@ -10,9 +10,7 @@ const envSchema = zod.object({
     PORT: zod.string().default('3000'),
     NODE_ENV: zod.string().default('development'),
     LOG_LEVEL: zod.string().default('info'),
-
-    SUPABASE_URL: requiredString,
-    DATABASE_URL: requiredString,
+    
     DIRECT_URL: zod.string().optional(),
 
     ACCESS_TOKEN_SECRET: requiredString,
