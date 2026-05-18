@@ -9,10 +9,6 @@ export const cartIdParamsSchema = z.object({
 	id: z.string().uuid('Invalid cart id'),
 });
 
-export const variantIdParamsSchema = z.object({
-	variantId: z.string().uuid('Invalid variant id'),
-});
-
 export const addToCartSchema = z.object({
 	variantId: z.string().uuid('Invalid variant id'),
 	quantity: z.coerce.number().int().min(1).default(1),
@@ -20,17 +16,6 @@ export const addToCartSchema = z.object({
 
 export const updateCartItemSchema = z.object({
 	quantity: z.coerce.number().int().min(1),
-});
-
-export const syncCartSchema = z.object({
-	items: z
-		.array(
-			z.object({
-				variantId: z.string().uuid('Invalid variant id'),
-				quantity: z.coerce.number().int().min(1),
-			}),
-		)
-		.default([]),
 });
 
 export const validateCartSchema = z.object({
@@ -44,15 +29,8 @@ export const validateCartSchema = z.object({
 		.optional(),
 });
 
-export const applyCouponSchema = z.object({
-	code: z.string().trim().min(1, 'Coupon code is required'),
-});
-
 export type GetCartsQuery = z.infer<typeof getCartsQuerySchema>;
 export type CartIdParams = z.infer<typeof cartIdParamsSchema>;
-export type VariantIdParams = z.infer<typeof variantIdParamsSchema>;
 export type AddToCartBody = z.infer<typeof addToCartSchema>;
 export type UpdateCartItemBody = z.infer<typeof updateCartItemSchema>;
-export type SyncCartBody = z.infer<typeof syncCartSchema>;
 export type ValidateCartBody = z.infer<typeof validateCartSchema>;
-export type ApplyCouponBody = z.infer<typeof applyCouponSchema>;

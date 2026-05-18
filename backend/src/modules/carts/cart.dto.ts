@@ -30,20 +30,9 @@ export interface UpdateCartItemInput {
 	quantity: number;
 }
 
-export interface SyncCartInput {
-	items: Array<{
-		variantId: string;
-		quantity: number;
-	}>;
-}
-
 export interface ValidateCartInput {
 	items?: Array<{
 		variantId: string;
 		quantity: number;
 	}>;
-}
-
-export interface ApplyCouponInput {
-	code: string;
 }

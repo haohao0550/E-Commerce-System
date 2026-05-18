@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /cart:
+ * /carts:
  *   get:
  *     summary: Get cart
  *     tags: [Carts]
@@ -63,7 +63,7 @@
 
 /**
  * @swagger
- * /cart/count:
+ * /carts/count:
  *   get:
  *     summary: Get cart count
  *     tags: [Carts]
@@ -76,7 +76,7 @@
 
 /**
  * @swagger
- * /cart/{id}:
+ * /carts/{id}:
  *   patch:
  *     summary: Update cart item by id
  *     tags: [Carts]
@@ -123,86 +123,7 @@
 
 /**
  * @swagger
- * /cart/items/{variantId}:
- *   patch:
- *     summary: Update cart item by variant
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: variantId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [quantity]
- *             properties:
- *               quantity:
- *                 type: integer
- *                 minimum: 1
- *     responses:
- *       200:
- *         description: Update cart item successfully
- *
- *   delete:
- *     summary: Delete cart item by variant
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: variantId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     responses:
- *       200:
- *         description: Delete cart item successfully
- */
-
-/**
- * @swagger
- * /cart/sync:
- *   post:
- *     summary: Sync cart
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [items]
- *             properties:
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     variantId:
- *                       type: string
- *                       format: uuid
- *                     quantity:
- *                       type: integer
- *                       minimum: 1
- *     responses:
- *       200:
- *         description: Sync cart successfully
- */
-
-/**
- * @swagger
- * /cart/validate:
+ * /carts/validate:
  *   post:
  *     summary: Validate cart
  *     tags: [Carts]
@@ -228,40 +149,4 @@
  *     responses:
  *       200:
  *         description: Validate cart successfully
- */
-
-/**
- * @swagger
- * /cart/apply-coupon:
- *   post:
- *     summary: Apply coupon
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [code]
- *             properties:
- *               code:
- *                 type: string
- *     responses:
- *       200:
- *         description: Apply coupon successfully
- */
-
-/**
- * @swagger
- * /cart/coupon:
- *   delete:
- *     summary: Remove coupon
- *     tags: [Carts]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Remove coupon successfully
  */
