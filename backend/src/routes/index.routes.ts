@@ -12,6 +12,7 @@ import {
   productVariantsRoute,
   adminProductVariantsRoute
 } from '@/modules/product-variant/index.js'
+import { couponRoutes , adminCouponRoutes } from '@/modules/coupons/index.js';
 
 const router = Router();
 
@@ -26,5 +27,7 @@ router.use('/products', productRoutes);
 router.use('/carts', cartRoutes);
 router.use(productVariantsRoute)
 router.use('/admin', adminProductVariantsRoute)
+router.use('/coupons', couponRoutes)
+router.use('/admin/coupons', adminCouponRoutes)
 
 export default router;
