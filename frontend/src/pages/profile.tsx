@@ -127,11 +127,7 @@ export default function ProfilePage() {
             </div>
           )}
           
-          {activeTab === 'addresses' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ShippingAddress />
-            </div>
-          )}
+          {activeTab === 'addresses' && <ShippingAddress />}
 
           {activeTab === 'security' && (
             <div className="space-y-12">

@@ -79,6 +79,7 @@ export class AddressService {
             return this.addressRepo.create(
                 {
                     ...input,
+                    district: input.district ?? null,
                     user : {
                         connect: {
                             id: userId,

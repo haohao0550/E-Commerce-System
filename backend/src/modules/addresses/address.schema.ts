@@ -5,7 +5,7 @@ export const createAddressSchema = zod.object({
     phone: zod.string().regex(/^[0-9]{10,11}$/, 'Invalid phone number format'),
     street: zod.string().min(5).max(200),
     ward: zod.string().min(2).max(100).optional(),
-    district: zod.string().min(2).max(100).optional(),
+    district: zod.string().min(2).max(100).nullable().optional(),
     province: zod.string().min(2).max(100),
     isDefault: zod.boolean().optional(),
 });
@@ -19,7 +19,7 @@ export const updateAddressSchema = zod.object({
     phone: zod.string().regex(/^[0-9]{10,11}$/, 'Invalid phone number format').optional(),
     street: zod.string().min(5).max(200).optional(),
     ward: zod.string().min(2).max(100).optional(),
-    district: zod.string().min(2).max(100).optional(),
+    district: zod.string().min(2).max(100).nullable().optional(),
     province: zod.string().min(2).max(100).optional(),
     isDefault: zod.boolean().optional(),
 });

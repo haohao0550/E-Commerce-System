@@ -12,6 +12,13 @@ export const Header = () => {
 
   const userLabel = user?.name || user?.email || 'Account';
 
+  const navigationItems = [
+    { label: 'Home', path: ROUTES.home },
+    { label: 'Shop', path: ROUTES.products },
+    { label: 'New Arrivals', path: '/#new-arrivals' },
+    { label: 'Trending', path: '/#trending' },
+  ];
+
   return (
     <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30">
       <div className="max-w-[1440px] mx-auto px-10 py-4 flex justify-between items-center w-full">
@@ -21,18 +28,15 @@ export const Header = () => {
             ShopKicks
           </Link>
           <div className="hidden md:flex gap-8">
-            <Link href={ROUTES.home} className="text-on-surface-variant font-medium hover:text-on-surface transition-colors">
-              Drops
-            </Link>
-            <Link href={ROUTES.home} className="text-on-surface-variant font-medium hover:text-on-surface transition-colors">
-              New Arrivals
-            </Link>
-            <Link href={ROUTES.home} className="text-on-surface-variant font-medium hover:text-on-surface transition-colors">
-              Trending
-            </Link>
-            <Link href={ROUTES.home} className="text-on-surface-variant font-medium hover:text-on-surface transition-colors">
-              Collections
-            </Link>
+            {navigationItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.path}
+                className="text-on-surface-variant font-medium hover:text-on-surface transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
         
@@ -162,14 +166,14 @@ export const Header = () => {
             className="border-t border-outline-variant/30 bg-surface md:hidden overflow-hidden"
           >
             <div className="flex flex-col gap-4 p-6">
-              {['Drops', 'New Arrivals', 'Trending', 'Collections'].map((item) => (
+              {navigationItems.map((item) => (
                 <Link
-                  key={item}
-                  href={ROUTES.home}
+                  key={item.label}
+                  href={item.path}
                   className="py-2 text-lg font-bold text-on-surface"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { 
-  ChevronLeft, 
-  ShoppingCart, 
-  Check, 
-  AlertTriangle, 
-  Info, 
+import {
+  ChevronLeft,
+  ShoppingCart,
+  Check,
+  AlertTriangle,
+  Info,
   Heart,
   ChevronDown,
   Truck,
@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PageLoader } from '@/components/common/PageLoader';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
+import { useAddress } from '@/context/AddressContext';
 import { productService } from '@/features/products/services/product.service';
 import { orderService } from '@/features/orders/services/order.service';
 import type { Product, ProductVariant } from '@/features/products/types/product';
@@ -31,6 +32,7 @@ export default function UserProductDetailPage() {
   const { id } = router.query;
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { addresses } = useAddress();
 
   // --- States ---
   const [product, setProduct] = useState<Product | null>(null);
@@ -42,17 +44,16 @@ export default function UserProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  
+
   // Checkout states
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccessId, setOrderSuccessId] = useState<string | null>(null);
-  
+
   // Checkout Form fields
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [province, setProvince] = useState('');
-  const [district, setDistrict] = useState('');
   const [ward, setWard] = useState('');
   const [street, setStreet] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY' | 'MOMO'>('COD');
@@ -67,10 +68,19 @@ export default function UserProductDetailPage() {
   // --- Auto-fill User details when Checkout opens ---
   useEffect(() => {
     if (isCheckoutOpen && user) {
-      setFullName(user.name || '');
-      setPhone(user.phone || '');
+      const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0];
+      if (defaultAddress) {
+        setFullName(defaultAddress.fullName);
+        setPhone(defaultAddress.phone);
+        setProvince(defaultAddress.province);
+        setWard(defaultAddress.ward || '');
+        setStreet(defaultAddress.street);
+      } else {
+        setFullName(user.name || '');
+        setPhone(user.phone || '');
+      }
     }
-  }, [isCheckoutOpen, user]);
+  }, [isCheckoutOpen, user, addresses]);
 
   // --- Fetch Product Detail ---
   useEffect(() => {
@@ -81,7 +91,7 @@ export default function UserProductDetailPage() {
       try {
         const data = await productService.getProductById(id);
         setProduct(data);
-        
+
         // Initialize default variant selections if variants exist
         if (data.variants && data.variants.length > 0) {
           const initialVariant = data.variants.find(v => v.stock > 0) || data.variants[0];
@@ -129,7 +139,7 @@ export default function UserProductDetailPage() {
         <div className="text-center space-y-6 max-w-md">
           <h2 className="text-3xl font-display font-black text-black uppercase tracking-tighter">Sneaker Not Found</h2>
           <p className="text-on-surface-variant font-medium">The product you are trying to view does not exist or has been retired from our catalog.</p>
-          <Link 
+          <Link
             href={ROUTES.home}
             className="inline-flex items-center gap-2 bg-black text-white px-8 py-3.5 font-bold uppercase tracking-widest text-xs rounded hover:bg-black/90 transition-all shadow-md active:scale-95"
           >
@@ -156,12 +166,12 @@ export default function UserProductDetailPage() {
   // --- Handlers ---
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    
+
     setIsAddingToCart(true);
     setTimeout(() => {
       setIsAddingToCart(false);
       showToast(
-        `Added ${quantity}x "${product.name}"${selectedVariant ? ` (${selectedColor} / US ${selectedSize})` : ''} to your cart!`, 
+        `Added ${quantity}x "${product.name}"${selectedVariant ? ` (${selectedColor} / US ${selectedSize})` : ''} to your cart!`,
         'success'
       );
     }, 1000);
@@ -169,7 +179,7 @@ export default function UserProductDetailPage() {
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    
+
     if (!user) {
       showToast('Please sign in to proceed with checkout', 'info');
       void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(router.asPath)}`);
@@ -217,7 +227,6 @@ export default function UserProductDetailPage() {
           phone: phone.trim(),
           street: street.trim(),
           ward: ward.trim() || undefined,
-          district: district.trim() || undefined,
           province: province.trim(),
         },
         note: note.trim() || undefined,
@@ -258,7 +267,7 @@ export default function UserProductDetailPage() {
   const toggleWishlist = () => {
     setIsWishlisted(!isWishlisted);
     showToast(
-      isWishlisted ? 'Removed product from your wishlist' : 'Added product to your wishlist!', 
+      isWishlisted ? 'Removed product from your wishlist' : 'Added product to your wishlist!',
       isWishlisted ? 'info' : 'success'
     );
   };
@@ -275,7 +284,7 @@ export default function UserProductDetailPage() {
     <div className="bg-surface-lowest min-h-screen font-sans selection:bg-black selection:text-white relative overflow-x-hidden">
       {/* Breadcrumbs / Back Bar */}
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-6">
-        <Link 
+        <Link
           href={ROUTES.home}
           className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant hover:text-black transition-colors group"
         >
@@ -287,17 +296,17 @@ export default function UserProductDetailPage() {
       {/* Main Workspace Catalog View */}
       <main className="max-w-[1440px] mx-auto px-6 md:px-10 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
+
           {/* Left Column: Premium Gallery Showcase */}
           <section className="lg:col-span-7 space-y-6">
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-surface-low border border-outline-variant/10">
-              <img 
-                src={images[activeImageIndex]} 
-                alt={`${product.name} Preview`} 
+              <img
+                src={images[activeImageIndex]}
+                alt={`${product.name} Preview`}
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 referrerPolicy="no-referrer"
               />
-              
+
               {/* Pulse Active Badges */}
               {!product.isDeleted && (
                 <span className="absolute top-6 left-6 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-black text-white">
@@ -314,16 +323,15 @@ export default function UserProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setActiveImageIndex(index)}
-                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                      activeImageIndex === index 
-                        ? 'border-black scale-95 shadow' 
+                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${activeImageIndex === index
+                        ? 'border-black scale-95 shadow'
                         : 'border-outline-variant/20 hover:border-black/50'
-                    }`}
+                      }`}
                   >
-                    <img 
-                      src={img} 
-                      alt="Thumbnail" 
-                      className="w-full h-full object-cover" 
+                    <img
+                      src={img}
+                      alt="Thumbnail"
+                      className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </button>
@@ -334,7 +342,7 @@ export default function UserProductDetailPage() {
 
           {/* Right Column: Premium Purchase Interface */}
           <section className="lg:col-span-5 flex flex-col justify-start space-y-8">
-            
+
             {/* Sneaker Brand & Header details */}
             <header className="space-y-3">
               <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
@@ -347,7 +355,7 @@ export default function UserProductDetailPage() {
                 <p className="text-3xl font-display font-black text-black tracking-tight font-mono">
                   ${displayPrice.toFixed(2)}
                 </p>
-                
+
                 {/* Active Variant Badges */}
                 {selectedVariant && (
                   <span className="text-[10px] font-bold text-on-surface-variant font-mono bg-surface-container px-2.5 py-1 rounded border border-outline-variant/10">
@@ -360,7 +368,7 @@ export default function UserProductDetailPage() {
             {/* Dynamic Interactive Variant Selectors */}
             {variants.length > 0 && (
               <div className="space-y-6 pt-4 border-t border-outline-variant/20">
-                
+
                 {/* Color Selector */}
                 {uniqueColors.length > 0 && (
                   <div className="space-y-3">
@@ -383,11 +391,10 @@ export default function UserProductDetailPage() {
                                 setSelectedSize(sizesForColor[0]);
                               }
                             }}
-                            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border rounded-full transition-all cursor-pointer ${
-                              isActive
+                            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border rounded-full transition-all cursor-pointer ${isActive
                                 ? 'bg-black text-white border-black font-extrabold shadow-sm'
                                 : 'bg-white text-on-surface-variant border-outline-variant/30 hover:border-black/50'
-                            }`}
+                              }`}
                           >
                             {color}
                           </button>
@@ -416,13 +423,12 @@ export default function UserProductDetailPage() {
                             key={size}
                             disabled={!isAvailableInColor && selectedColor !== ''}
                             onClick={() => setSelectedSize(size)}
-                            className={`py-3 text-xs font-bold font-mono border rounded-lg transition-all cursor-pointer ${
-                              isActive
+                            className={`py-3 text-xs font-bold font-mono border rounded-lg transition-all cursor-pointer ${isActive
                                 ? 'bg-black text-white border-black font-extrabold'
                                 : isAvailableInColor || selectedColor === ''
-                                ? 'bg-white text-black border-outline-variant/30 hover:border-black/50'
-                                : 'bg-surface-low text-on-surface-variant/40 border-outline-variant/10 cursor-not-allowed opacity-50'
-                            }`}
+                                  ? 'bg-white text-black border-outline-variant/30 hover:border-black/50'
+                                  : 'bg-surface-low text-on-surface-variant/40 border-outline-variant/10 cursor-not-allowed opacity-50'
+                              }`}
                           >
                             {size}
                           </button>
@@ -461,13 +467,13 @@ export default function UserProductDetailPage() {
 
             {/* Interactive Quantity & Add to Cart Core controls */}
             <div className="flex flex-col gap-4 pt-6 border-t border-outline-variant/20">
-              
+
               <div className="flex gap-4">
                 {/* Quantity Selector */}
                 {!isOutOfStock && selectedVariant && (
                   <div className="flex items-center border border-outline-variant/30 rounded-xl bg-white shadow-sm overflow-hidden h-14 shrink-0">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => adjustQuantity(-1)}
                       className="px-4 text-lg font-bold text-on-surface-variant hover:text-black transition-colors"
                     >
@@ -476,8 +482,8 @@ export default function UserProductDetailPage() {
                     <span className="w-10 text-center font-mono text-sm font-bold text-black select-none">
                       {quantity}
                     </span>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => adjustQuantity(1)}
                       className="px-4 text-lg font-bold text-on-surface-variant hover:text-black transition-colors"
                     >
@@ -491,11 +497,10 @@ export default function UserProductDetailPage() {
                   type="button"
                   disabled={isOutOfStock || isAddingToCart}
                   onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center gap-2 h-14 border rounded-xl font-bold uppercase tracking-widest text-xs transition-all active:scale-98 cursor-pointer ${
-                    isOutOfStock
+                  className={`flex-1 flex items-center justify-center gap-2 h-14 border rounded-xl font-bold uppercase tracking-widest text-xs transition-all active:scale-98 cursor-pointer ${isOutOfStock
                       ? 'bg-surface-high text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed shadow-none'
                       : 'bg-white text-black border-black hover:bg-surface-low'
-                  }`}
+                    }`}
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span>{isAddingToCart ? 'Injecting...' : 'Add to Cart'}</span>
@@ -505,11 +510,10 @@ export default function UserProductDetailPage() {
                 <button
                   type="button"
                   onClick={toggleWishlist}
-                  className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer ${
-                    isWishlisted 
-                      ? 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100' 
+                  className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer ${isWishlisted
+                      ? 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100'
                       : 'bg-white border-outline-variant/30 text-on-surface-variant hover:border-black/50 hover:text-black'
-                  }`}
+                    }`}
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
                 </button>
@@ -520,11 +524,10 @@ export default function UserProductDetailPage() {
                 type="button"
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className={`w-full flex items-center justify-center gap-2 h-14 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-md active:scale-98 cursor-pointer ${
-                  isOutOfStock
+                className={`w-full flex items-center justify-center gap-2 h-14 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-md active:scale-98 cursor-pointer ${isOutOfStock
                     ? 'bg-surface-high text-on-surface-variant/40 border border-outline-variant/10 cursor-not-allowed shadow-none'
                     : 'bg-black text-white hover:bg-black/90 hover:shadow-lg'
-                }`}
+                  }`}
               >
                 <span>Direct Checkout (Buy Now)</span>
               </button>
@@ -549,7 +552,7 @@ export default function UserProductDetailPage() {
 
             {/* Accordion Specification Panels */}
             <div className="pt-6 border-t border-outline-variant/20 space-y-2">
-              
+
               {/* Description Panel */}
               <div className="border border-outline-variant/20 rounded-xl overflow-hidden bg-white shadow-sm">
                 <button
@@ -652,10 +655,10 @@ export default function UserProductDetailPage() {
 
               {/* Drawer Content */}
               <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-                
+
                 {orderSuccessId ? (
                   // --- SUCCESS STATE PANEL ---
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-10 space-y-6"
@@ -706,7 +709,7 @@ export default function UserProductDetailPage() {
                 ) : (
                   // --- CHECKOUT FORM STATE ---
                   <form onSubmit={handlePlaceOrder} className="space-y-6">
-                    
+
                     {/* Item Card Review */}
                     <div className="flex gap-4 p-4 bg-surface-low border border-outline-variant/10 rounded-xl">
                       <div className="w-16 h-16 bg-white rounded-lg overflow-hidden border border-outline-variant/10 flex-shrink-0">
@@ -727,7 +730,33 @@ export default function UserProductDetailPage() {
                       <h4 className="text-xs font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
                         1. Shipping Address
                       </h4>
-                      
+
+                      {addresses.length > 0 && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Use Saved Address</label>
+                          <select
+                            onChange={(e) => {
+                              const selected = addresses.find((a) => a.id === e.target.value);
+                              if (selected) {
+                                setFullName(selected.fullName);
+                                setPhone(selected.phone);
+                                setProvince(selected.province);
+                                setWard(selected.ward || '');
+                                setStreet(selected.street);
+                              }
+                            }}
+                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                          >
+                            <option value="">-- Select a saved address --</option>
+                            {addresses.map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.fullName} - {a.street}, {a.province} {a.isDefault ? '(Default)' : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Full Name *</label>
@@ -753,7 +782,7 @@ export default function UserProductDetailPage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Province/City *</label>
                           <input
@@ -762,16 +791,6 @@ export default function UserProductDetailPage() {
                             placeholder="Hồ Chí Minh"
                             value={province}
                             onChange={(e) => setProvince(e.target.value)}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">District</label>
-                          <input
-                            type="text"
-                            placeholder="Quận 1"
-                            value={district}
-                            onChange={(e) => setDistrict(e.target.value)}
                             className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                           />
                         </div>
@@ -805,16 +824,15 @@ export default function UserProductDetailPage() {
                       <h4 className="text-xs font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
                         2. Payment Method
                       </h4>
-                      
+
                       <div className="grid grid-cols-3 gap-3">
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('COD')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${
-                            paymentMethod === 'COD'
+                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'COD'
                               ? 'border-black bg-black/5 font-bold shadow-sm'
                               : 'border-outline-variant/30 hover:border-black/50'
-                          }`}
+                            }`}
                         >
                           <DollarSign className="w-5 h-5 text-black" />
                           <span className="text-[10px] uppercase">COD</span>
@@ -822,11 +840,10 @@ export default function UserProductDetailPage() {
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('VNPAY')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${
-                            paymentMethod === 'VNPAY'
+                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'VNPAY'
                               ? 'border-blue-600 bg-blue-50 font-bold shadow-sm'
                               : 'border-outline-variant/30 hover:border-black/50'
-                          }`}
+                            }`}
                         >
                           <CreditCard className="w-5 h-5 text-blue-600" />
                           <span className="text-[10px] uppercase text-blue-600">VNPAY</span>
@@ -834,11 +851,10 @@ export default function UserProductDetailPage() {
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('MOMO')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${
-                            paymentMethod === 'MOMO'
+                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'MOMO'
                               ? 'border-pink-600 bg-pink-50 font-bold shadow-sm'
                               : 'border-outline-variant/30 hover:border-black/50'
-                          }`}
+                            }`}
                         >
                           <QrCode className="w-5 h-5 text-pink-600" />
                           <span className="text-[10px] uppercase text-pink-600">MOMO</span>

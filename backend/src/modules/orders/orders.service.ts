@@ -88,6 +88,8 @@ export class OrdersService {
     if (finalPrice < 0) finalPrice = 0
 
     // 5. Chuẩn bị dữ liệu và gọi Repo để chạy Transaction
+    const { district, ...shippingAddress } = data.shippingAddress || {}
+
     const createData: CreateOrderTransactionInput = {
       userId,
       status: 'PENDING',
@@ -97,7 +99,7 @@ export class OrdersService {
       shippingFee,
       discountAmount,
       finalPrice,
-      shippingAddress: data.shippingAddress,
+      shippingAddress,
       couponId: data.couponId,
       note: data.note,
       items: repoItems
