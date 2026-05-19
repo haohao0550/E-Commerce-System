@@ -16,7 +16,10 @@ export const updateAddressParamsSchema = zod.object({
 
 export const updateAddressSchema = zod.object({
     fullName: zod.string().min(2).max(100).optional(),
-    phone: zod.string().regex(/^[0-9]{10,11}$/, 'Invalid phone number format').optional(),
+    phone: zod
+        .string()
+        .regex(/^[0-9]{10,11}$/, 'Invalid phone number format')
+        .optional(),
     street: zod.string().min(5).max(200).optional(),
     ward: zod.string().min(2).max(100).optional(),
     district: zod.string().min(2).max(100).nullable().optional(),
@@ -34,5 +37,4 @@ export const getAddressListSchema = zod.object({
     search: zod.string().min(1).max(100).optional(),
 });
 
-
-export const deleteAddressParamsSchema = updateAddressParamsSchema
+export const deleteAddressParamsSchema = updateAddressParamsSchema;

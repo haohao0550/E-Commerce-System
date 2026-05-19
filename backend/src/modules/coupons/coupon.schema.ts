@@ -37,18 +37,17 @@ const couponBodySchema = z.object({
     expiresAt: nullableDateSchema,
 });
 
-export const createCouponSchema = couponBodySchema
-    .refine(
-        (data) => data.maxDiscount == null || data.maxDiscount > 0,
-        { message: 'Max discount must be greater than 0', path: ['maxDiscount'] },
-    );
+export const createCouponSchema = couponBodySchema.refine(
+    (data) => data.maxDiscount == null || data.maxDiscount > 0,
+    { message: 'Max discount must be greater than 0', path: ['maxDiscount'] },
+);
 
 export const updateCouponSchema = couponBodySchema
     .partial()
-    .refine(
-        (data) => data.maxDiscount == null || data.maxDiscount > 0,
-        { message: 'Max discount must be greater than 0', path: ['maxDiscount'] },
-    )
+    .refine((data) => data.maxDiscount == null || data.maxDiscount > 0, {
+        message: 'Max discount must be greater than 0',
+        path: ['maxDiscount'],
+    })
     .refine((data) => Object.keys(data).length > 0, {
         message: 'At least one field must be provided',
     });

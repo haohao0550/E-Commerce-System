@@ -1,7 +1,12 @@
 import * as argon2 from 'argon2';
 import { Prisma } from '@/generated/prisma/client.js';
 import { AppError, NotFoundError, UnauthorizedError } from '@/shared/errors/app.error.js';
-import { ChangePasswordInput, GetUsersQuery, UpdateProfileInput, UpdateUserRoleInput } from './user.dto.js';
+import {
+    ChangePasswordInput,
+    GetUsersQuery,
+    UpdateProfileInput,
+    UpdateUserRoleInput,
+} from './user.dto.js';
 import { UserRepo } from './user.repo.js';
 
 export class UserService {
@@ -70,7 +75,11 @@ export class UserService {
                     const target = Array.isArray(error.meta?.target)
                         ? error.meta.target.join(', ')
                         : 'field';
-                    throw new AppError(`${target} already exists in the system`, 400, 'DUPLICATE_FIELD');
+                    throw new AppError(
+                        `${target} already exists in the system`,
+                        400,
+                        'DUPLICATE_FIELD',
+                    );
                 }
 
                 if (error.code === 'P2025') {

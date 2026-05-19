@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";     
+import { Redis } from '@upstash/redis';
 import { appConfig } from '@/shared/configs/app.config.js';
 
 export const redis = new Redis({

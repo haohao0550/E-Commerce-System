@@ -40,8 +40,16 @@ export type ReviewWithUserAndProduct = Prisma.ReviewGetPayload<{
 
 export interface IReviewRepo {
     count(where: Prisma.ReviewWhereInput): Promise<number>;
-    findManyByProduct(where: Prisma.ReviewWhereInput, skip: number, take: number): Promise<ReviewWithUser[]>;
-    findManyAdmin(where: Prisma.ReviewWhereInput, skip: number, take: number): Promise<ReviewWithUserAndProduct[]>;
+    findManyByProduct(
+        where: Prisma.ReviewWhereInput,
+        skip: number,
+        take: number,
+    ): Promise<ReviewWithUser[]>;
+    findManyAdmin(
+        where: Prisma.ReviewWhereInput,
+        skip: number,
+        take: number,
+    ): Promise<ReviewWithUserAndProduct[]>;
     findById(id: string): Promise<Review | null>;
     findByUserAndProduct(userId: string, productId: string): Promise<Review | null>;
     create(data: Prisma.ReviewCreateInput): Promise<ReviewWithUser>;

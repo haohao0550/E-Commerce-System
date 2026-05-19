@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(correlationID);
 app.use(requestLogger);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }));
 setupSwagger(app);
 app.use('/api/v1', router);
 app.use(errorHandler);

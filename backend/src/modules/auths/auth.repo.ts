@@ -33,11 +33,11 @@ export class AuthRepo implements IAuthRepo {
 
     async logoutUser(id: string): Promise<User> {
         await this.prisma.refreshToken.deleteMany({
-            where: { userId: id }
+            where: { userId: id },
         });
 
         const user = await this.prisma.user.findUnique({
-            where: { id }
+            where: { id },
         });
 
         if (!user) throw new AppError('User not found', 404, 'USER_NOT_FOUND');
@@ -56,7 +56,10 @@ export class AuthRepo implements IAuthRepo {
         });
     }
 
-    async updateRefreshToken(jti: string, data: Prisma.RefreshTokenUpdateInput): Promise<RefreshToken> {
+    async updateRefreshToken(
+        jti: string,
+        data: Prisma.RefreshTokenUpdateInput,
+    ): Promise<RefreshToken> {
         return this.prisma.refreshToken.update({
             where: { jti },
             data,

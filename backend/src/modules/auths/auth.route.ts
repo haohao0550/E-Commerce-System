@@ -14,7 +14,7 @@ router.post(
     '/register',
     validateBody(registerSchema),
     auditLog('REGISTER'),
-    asyncHandler(authController.register)
+    asyncHandler(authController.register),
 );
 
 router.post(
@@ -22,21 +22,17 @@ router.post(
     authLimiter,
     validateBody(loginSchema),
     auditLog('LOGIN'),
-    asyncHandler(authController.login)
+    asyncHandler(authController.login),
 );
 
-router.post(
-    '/refresh',
-    authLimiter,
-    asyncHandler(authController.refreshToken)
-);
+router.post('/refresh', authLimiter, asyncHandler(authController.refreshToken));
 
 router.post(
     '/logout',
     authenticate,
     requireRole('USER', 'ADMIN'),
     auditLog('LOGOUT'),
-    asyncHandler(authController.logout)
+    asyncHandler(authController.logout),
 );
 
 export default router;

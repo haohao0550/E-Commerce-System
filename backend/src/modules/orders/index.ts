@@ -1,1 +1,1 @@
-export * from './orders.route.js'
+export * from './orders.route.js';

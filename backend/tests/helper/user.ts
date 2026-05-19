@@ -1,7 +1,6 @@
 import prisma from '../db.config.js';
 import * as argon2 from 'argon2';
 
-
 export const clearUsers = async () => {
     await prisma.user.deleteMany();
 };

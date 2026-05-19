@@ -14,4 +14,3 @@ export interface IAuthRepo {
     findRefreshTokenByJti(jti: string): Promise<RefreshToken | null>;
     updateRefreshToken(jti: string, data: Prisma.RefreshTokenUpdateInput): Promise<RefreshToken>;
 }
-

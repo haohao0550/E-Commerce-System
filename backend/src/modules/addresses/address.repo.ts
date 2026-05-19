@@ -19,7 +19,11 @@ export class AddressRepo implements IAddressRepo {
         });
     }
 
-    async findAllByUserId(where: Prisma.UserAddressWhereInput, skip: number, take: number): Promise<UserAddress[]> {
+    async findAllByUserId(
+        where: Prisma.UserAddressWhereInput,
+        skip: number,
+        take: number,
+    ): Promise<UserAddress[]> {
         return await this.prisma.userAddress.findMany({
             where,
             orderBy: {
@@ -45,13 +49,20 @@ export class AddressRepo implements IAddressRepo {
         });
     }
 
-    async create(data: Prisma.UserAddressCreateInput, tx?: Prisma.TransactionClient): Promise<UserAddress> {
+    async create(
+        data: Prisma.UserAddressCreateInput,
+        tx?: Prisma.TransactionClient,
+    ): Promise<UserAddress> {
         return this.getClient(tx).userAddress.create({
             data,
         });
     }
 
-    async update(id: string, data: Prisma.UserAddressUpdateInput, tx?: Prisma.TransactionClient): Promise<UserAddress> {
+    async update(
+        id: string,
+        data: Prisma.UserAddressUpdateInput,
+        tx?: Prisma.TransactionClient,
+    ): Promise<UserAddress> {
         return this.getClient(tx).userAddress.update({
             where: { id },
             data,

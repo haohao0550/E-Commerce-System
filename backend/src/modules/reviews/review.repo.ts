@@ -1,6 +1,10 @@
 import prisma from '@/shared/configs/db.config.js';
 import type { Prisma, Review } from '@/generated/prisma/client.js';
-import type { IReviewRepo, ReviewWithUser, ReviewWithUserAndProduct } from './review.repo.interface.js';
+import type {
+    IReviewRepo,
+    ReviewWithUser,
+    ReviewWithUserAndProduct,
+} from './review.repo.interface.js';
 
 export class ReviewRepo implements IReviewRepo {
     async count(where: Prisma.ReviewWhereInput): Promise<number> {

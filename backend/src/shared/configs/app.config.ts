@@ -3,14 +3,13 @@ import zod from 'zod';
 
 dotenv.config();
 
-
-const requiredString = zod.string().trim().min(1, 'This env is required')
+const requiredString = zod.string().trim().min(1, 'This env is required');
 
 const envSchema = zod.object({
     PORT: zod.string().default('3000'),
     NODE_ENV: zod.string().default('development'),
     LOG_LEVEL: zod.string().default('info'),
-    
+
     DIRECT_URL: zod.string().optional(),
 
     ACCESS_TOKEN_SECRET: requiredString,
@@ -26,12 +25,12 @@ const envSchema = zod.object({
     CLOUDINARY_API_SECRET: requiredString,
 });
 
-const parsedEnv = envSchema.safeParse(process.env)
+const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
-  console.error('Invalid environment variables:')
-  console.error(parsedEnv.error.flatten().fieldErrors)
-  process.exit(1)
+    console.error('Invalid environment variables:');
+    console.error(parsedEnv.error.flatten().fieldErrors);
+    process.exit(1);
 }
 
-export const appConfig = parsedEnv.data
+export const appConfig = parsedEnv.data;

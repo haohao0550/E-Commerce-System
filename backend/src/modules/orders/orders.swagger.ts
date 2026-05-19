@@ -51,7 +51,7 @@
  *         province:
  *           type: string
  *           example: "Ho Chi Minh"
- * 
+ *
  *     CreateOrderRequest:
  *       type: object
  *       required:
@@ -128,7 +128,7 @@
  *         description: Get user orders successfully
  *       401:
  *         description: Unauthorized
- * 
+ *
  *   post:
  *     tags: [Orders]
  *     summary: Create a new order

@@ -4,11 +4,7 @@ import { authenticate, requireRole } from '@/shared/middlewares/authenticate.mid
 import { validateBody, validateParams } from '@/shared/middlewares/validate.middleware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { asyncHandler } from '@/shared/errors/async-handler.error.js';
-import {
-    couponIdParamSchema,
-    createCouponSchema,
-    updateCouponSchema,
-} from './coupon.schema.js';
+import { couponIdParamSchema, createCouponSchema, updateCouponSchema } from './coupon.schema.js';
 
 const router = Router();
 const couponController = new CouponController();

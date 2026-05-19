@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
-import { validateBody, validateParams, validateQuery } from '@/shared/middlewares/validate.middleware.js';
+import {
+    validateBody,
+    validateParams,
+    validateQuery,
+} from '@/shared/middlewares/validate.middleware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { asyncHandler } from '@/shared/errors/async-handler.error.js';
 import { CartController } from './cart.controller.js';
@@ -10,11 +14,11 @@ const router = Router();
 const cartController = new CartController();
 
 router.get(
-    '/', 
+    '/',
     auditLog('Get cart'),
-    authenticate, 
-    requireRole('USER'), 
-    validateQuery(cartSchema.getCartsQuerySchema), 
+    authenticate,
+    requireRole('USER'),
+    validateQuery(cartSchema.getCartsQuerySchema),
     asyncHandler(cartController.getCarts.bind(cartController)),
 );
 

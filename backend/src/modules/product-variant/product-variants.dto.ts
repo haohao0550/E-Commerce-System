@@ -1,49 +1,49 @@
-import type { ProductVariant } from '@/generated/prisma/client.js'
-import { Decimal } from '@/generated/prisma/internal/prismaNamespace.js'
+import type { ProductVariant } from '@/generated/prisma/client.js';
+import { Decimal } from '@/generated/prisma/internal/prismaNamespace.js';
 
-export type ProductVariantResponse = ProductVariant
+export type ProductVariantResponse = ProductVariant;
 
 export type CreateProductVariantDTO = {
-  sku: string
-  color?: string
-  size?: string
-  price: number
-  stock?: number
-}
+    sku: string;
+    color?: string;
+    size?: string;
+    price: number;
+    stock?: number;
+};
 
 export type UpdateProductVariantDTO = {
-  sku?: string
-  color?: string | null
-  size?: string | null
-  price?: number
-  stock?: number
-}
+    sku?: string;
+    color?: string | null;
+    size?: string | null;
+    price?: number;
+    stock?: number;
+};
 
 export type ProductVariantQueryDTO = {
-  productId?: string
-  sku?: string
-  color?: string
-  size?: string
-  minPrice?: number
-  maxPrice?: number
-  inStock?: boolean
-  page?: number
-  limit?: number
-}
+    productId?: string;
+    sku?: string;
+    color?: string;
+    size?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    page?: number;
+    limit?: number;
+};
 
 export type ProductVariantCreateData = {
-  productId: string
-  sku: string
-  color?: string
-  size?: string
-  price:  number
-  stock?: number
-}
+    productId: string;
+    sku: string;
+    color?: string;
+    size?: string;
+    price: number;
+    stock?: number;
+};
 
 export type ProductVariantUpdateData = {
-  sku?: string
-  color?: string | null
-  size?: string | null
-  price?: Decimal | number
-  stock?: number
-}
+    sku?: string;
+    color?: string | null;
+    size?: string | null;
+    price?: Decimal | number;
+    stock?: number;
+};

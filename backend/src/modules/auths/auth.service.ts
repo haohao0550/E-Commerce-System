@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import crypto from 'node:crypto'
+import crypto from 'node:crypto';
 import * as argon2 from 'argon2';
 import { AuthRepo } from './auth.repo.js';
 import { RegisterInput, LoginInput } from './auth.dto.js';
@@ -20,15 +20,13 @@ export class AuthService {
         const accessToken = jwt.sign(
             { userId, role, jti },
             process.env.ACCESS_TOKEN_SECRET as string,
-            { expiresIn: '15m' }
+            { expiresIn: '15m' },
         );
 
         // Refresh Token
-        const refreshToken = jwt.sign(
-            { userId, jti },
-            process.env.REFRESH_TOKEN_SECRET as string,
-            { expiresIn: '7d' }
-        );
+        const refreshToken = jwt.sign({ userId, jti }, process.env.REFRESH_TOKEN_SECRET as string, {
+            expiresIn: '7d',
+        });
 
         return { accessToken, refreshToken, jti };
     }
@@ -55,7 +53,7 @@ export class AuthService {
         // Save Refresh Token to DB
         await this.authRepo.createRefreshToken({
             jti,
-            refreshTokenHash: refreshToken, 
+            refreshTokenHash: refreshToken,
             user: { connect: { id: newUser.id } },
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         });
@@ -98,17 +96,21 @@ export class AuthService {
 
     async refreshToken(token: string) {
         let decoded: any;
-        
+
         try {
             decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET as string);
         } catch (error) {
             throw new UnauthorizedError('Invalid or expired refresh token');
         }
-        
+
         // Find in DB
         const refreshTokenRecord = await this.authRepo.findRefreshTokenByJti(decoded.jti);
-        
-        if (!refreshTokenRecord || refreshTokenRecord.revoked || new Date(refreshTokenRecord.expiresAt) < new Date()) {
+
+        if (
+            !refreshTokenRecord ||
+            refreshTokenRecord.revoked ||
+            new Date(refreshTokenRecord.expiresAt) < new Date()
+        ) {
             throw new UnauthorizedError('Refresh token is invalid or has been revoked');
         }
 
@@ -133,7 +135,7 @@ export class AuthService {
         return {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            user
+            user,
         };
     }
 }

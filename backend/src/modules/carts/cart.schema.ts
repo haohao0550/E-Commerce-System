@@ -1,32 +1,32 @@
 import { z } from 'zod';
 
 export const getCartsQuerySchema = z.object({
-	page: z.coerce.number().int().min(1).default(1),
-	limit: z.coerce.number().int().min(1).max(100).default(50),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
 export const cartIdParamsSchema = z.object({
-	id: z.string().uuid('Invalid cart id'),
+    id: z.string().uuid('Invalid cart id'),
 });
 
 export const addToCartSchema = z.object({
-	variantId: z.string().uuid('Invalid variant id'),
-	quantity: z.coerce.number().int().min(1).default(1),
+    variantId: z.string().uuid('Invalid variant id'),
+    quantity: z.coerce.number().int().min(1).default(1),
 });
 
 export const updateCartItemSchema = z.object({
-	quantity: z.coerce.number().int().min(1),
+    quantity: z.coerce.number().int().min(1),
 });
 
 export const validateCartSchema = z.object({
-	items: z
-		.array(
-			z.object({
-				variantId: z.string().uuid('Invalid variant id'),
-				quantity: z.coerce.number().int().min(1),
-			}),
-		)
-		.optional(),
+    items: z
+        .array(
+            z.object({
+                variantId: z.string().uuid('Invalid variant id'),
+                quantity: z.coerce.number().int().min(1),
+            }),
+        )
+        .optional(),
 });
 
 export type GetCartsQuery = z.infer<typeof getCartsQuerySchema>;

@@ -44,12 +44,12 @@ export class AddressService {
             userId,
             ...(search && {
                 OR: [
-                    { fullName: { contains: search, mode: 'insensitive'} },
-                    { phone: { contains: search, mode: 'insensitive'} },
-                    { street: { contains: search, mode: 'insensitive'} },
-                    { ward: { contains: search, mode: 'insensitive',} },
-                    { district: { contains: search, mode: 'insensitive'}},
-                    { province: { contains: search, mode: 'insensitive'}},
+                    { fullName: { contains: search, mode: 'insensitive' } },
+                    { phone: { contains: search, mode: 'insensitive' } },
+                    { street: { contains: search, mode: 'insensitive' } },
+                    { ward: { contains: search, mode: 'insensitive' } },
+                    { district: { contains: search, mode: 'insensitive' } },
+                    { province: { contains: search, mode: 'insensitive' } },
                 ],
             }),
         };
@@ -59,14 +59,14 @@ export class AddressService {
         const addresses = await this.addressRepo.findAllByUserId(where, skip, take);
         const total = await this.addressRepo.count(where);
 
-        return { 
-            data: addresses.map((address) => this.toUserAddress(address)), 
+        return {
+            data: addresses.map((address) => this.toUserAddress(address)),
             meta: {
                 page,
                 limit,
                 total,
                 totalPages: Math.ceil(total / limit),
-            } 
+            },
         };
     }
 
@@ -80,7 +80,7 @@ export class AddressService {
                 {
                     ...input,
                     district: input.district ?? null,
-                    user : {
+                    user: {
                         connect: {
                             id: userId,
                         },
@@ -123,7 +123,7 @@ export class AddressService {
         });
 
         return this.toUserAddress(updatedAddress);
-    }   
+    }
 
     async deleteAddress(userId: string, id: string) {
         const address = await this.addressRepo.findById(id);

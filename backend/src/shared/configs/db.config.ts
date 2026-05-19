@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from "@/generated/prisma/client.js";
+import { PrismaClient } from '@/generated/prisma/client.js';
 import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -8,8 +8,8 @@ const prismaClientSingleton = () => {
     const pool = new pg.Pool({
         connectionString: process.env.DATABASE_URL,
         ssl: {
-            rejectUnauthorized: false
-        }
+            rejectUnauthorized: false,
+        },
     });
     const adapter = new PrismaPg(pool);
 

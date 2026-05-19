@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import { AddressService } from "./address.service.js";
+import { Request, Response, NextFunction } from 'express';
+import { AddressService } from './address.service.js';
 
 export class AddressController {
     private addressService: AddressService;
@@ -15,10 +15,10 @@ export class AddressController {
 
         res.status(200).json({
             success: true,
-            message: "Get all addresses successful",
+            message: 'Get all addresses successful',
             data: addresses,
         });
-    };
+    }
 
     async createAddress(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.user;
@@ -27,10 +27,10 @@ export class AddressController {
 
         res.status(201).json({
             success: true,
-            message: "Create address successful",
+            message: 'Create address successful',
             data: address,
         });
-    };
+    }
 
     async getAddressById(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.user;
@@ -40,10 +40,10 @@ export class AddressController {
 
         res.status(200).json({
             success: true,
-            message: "Get address by ID successful",
+            message: 'Get address by ID successful',
             data: address,
         });
-    };
+    }
 
     async getDefaultAddress(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.user;
@@ -52,7 +52,7 @@ export class AddressController {
 
         res.status(200).json({
             success: true,
-            message: "Get default address successful",
+            message: 'Get default address successful',
             data: address,
         });
     }
@@ -65,10 +65,10 @@ export class AddressController {
 
         res.status(200).json({
             success: true,
-            message: "Update address successful",
+            message: 'Update address successful',
             data: address,
         });
-    };
+    }
 
     async deleteAddress(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.user;
@@ -78,8 +78,8 @@ export class AddressController {
 
         res.status(200).json({
             success: true,
-            message: "Delete address successful",
+            message: 'Delete address successful',
             data: {},
         });
-    };
+    }
 }

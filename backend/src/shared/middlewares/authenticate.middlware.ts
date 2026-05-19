@@ -3,11 +3,7 @@ import jwt from 'jsonwebtoken';
 import { AppError } from '@/shared/errors/app.error.js';
 import prisma from '@/shared/configs/db.config.js';
 
-export const authenticate = async (
-    req: Request,
-    _res: Response,
-    next: NextFunction
-) => {
+export const authenticate = async (req: Request, _res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
 
@@ -15,10 +11,7 @@ export const authenticate = async (
             throw new AppError('No token provided', 401, 'NO_TOKEN');
         }
 
-        const decoded = jwt.verify(
-            token,
-            process.env.ACCESS_TOKEN_SECRET as string
-        ) as {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string) as {
             userId: string;
             role: string;
             jti: string;
@@ -35,24 +28,16 @@ export const authenticate = async (
         }
 
         if (user.isDeleted) {
-            throw new AppError(
-                'User account has been deleted',
-                401,
-                'USER_DELETED'
-            );
+            throw new AppError('User account has been deleted', 401, 'USER_DELETED');
         }
 
         // Kiểm tra xem session (Refresh Token) đã bị thu hồi chưa
         const refreshToken = await prisma.refreshToken.findUnique({
-            where: { jti: decoded.jti }
+            where: { jti: decoded.jti },
         });
 
         if (!refreshToken || refreshToken.revoked) {
-            throw new AppError(
-                'Phiên làm việc đã hết hạn hoặc bị thu hồi',
-                401,
-                'SESSION_REVOKED'
-            );
+            throw new AppError('Phiên làm việc đã hết hạn hoặc bị thu hồi', 401, 'SESSION_REVOKED');
         }
 
         req.user = decoded;

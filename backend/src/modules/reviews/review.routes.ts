@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { ReviewController } from './review.controller.js';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
-import { validateBody, validateParams, validateQuery } from '@/shared/middlewares/validate.middleware.js';
+import {
+    validateBody,
+    validateParams,
+    validateQuery,
+} from '@/shared/middlewares/validate.middleware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { asyncHandler } from '@/shared/errors/async-handler.error.js';
 import {

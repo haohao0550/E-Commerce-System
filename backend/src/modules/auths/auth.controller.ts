@@ -20,10 +20,10 @@ export class AuthController {
 
     register = async (req: Request, res: Response) => {
         req.log?.info({ email: req.body.email }, 'Starting user registration process');
-        
+
         const result = await this.authService.register(req.body);
         this.setRefreshTokenCookie(res, result.refreshToken);
-        
+
         req.log?.info({ userId: result.user.id }, 'User registered successfully');
 
         res.status(201).json({
@@ -71,15 +71,15 @@ export class AuthController {
         req.log?.info({ userId, jti }, 'User requested logout');
 
         await this.authService.logout(jti);
-        
+
         res.clearCookie('refreshToken');
-        
+
         req.log?.info({ userId }, 'Logged out and token revoked successfully');
 
         res.status(200).json({
             success: true,
             message: 'Logout successful',
-            data: {}
+            data: {},
         });
     };
 
@@ -91,9 +91,9 @@ export class AuthController {
         }
 
         req.log?.info('Refreshing access token');
-        
+
         const result = await this.authService.refreshToken(token);
-        
+
         // Defensive check
         if (!result || !result.refreshToken) {
             throw new AppError('Failed to refresh token', 500, 'REFRESH_FAILED');

@@ -40,7 +40,10 @@ export class CouponService {
         const maxDiscount = coupon.maxDiscount === null ? null : Number(coupon.maxDiscount);
         const discountAmount = (orderValue * discountPercent) / 100;
 
-        return Math.min(orderValue, maxDiscount === null ? discountAmount : Math.min(discountAmount, maxDiscount));
+        return Math.min(
+            orderValue,
+            maxDiscount === null ? discountAmount : Math.min(discountAmount, maxDiscount),
+        );
     }
 
     private ensureCouponUsable(coupon: any, orderValue: number) {
@@ -62,7 +65,11 @@ export class CouponService {
 
         const minOrderValue = coupon.minOrderValue === null ? null : Number(coupon.minOrderValue);
         if (minOrderValue !== null && orderValue < minOrderValue) {
-            throw new AppError('Order value does not meet coupon minimum', 400, 'COUPON_MIN_ORDER_VALUE_NOT_MET');
+            throw new AppError(
+                'Order value does not meet coupon minimum',
+                400,
+                'COUPON_MIN_ORDER_VALUE_NOT_MET',
+            );
         }
     }
 

@@ -10,7 +10,5 @@ app.listen({ port: PORT, host: '0.0.0.0' }, () => {
     console.log(
         `Server running at http://localhost:${appConfig.PORT}/ in ${appConfig.NODE_ENV} mode`,
     );
-    console.log(
-        `Swagger UI available at http://localhost:${PORT}/api-docs`,
-    );
+    console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });

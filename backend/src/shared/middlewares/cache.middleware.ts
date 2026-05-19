@@ -25,7 +25,7 @@ export const cacheMiddleware = (keyPrefix: string, ttlSecs: number) => {
     return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
         const cacheKey = `${keyPrefix}:${req.method}:${req.originalUrl}:${req.user?.userId ?? 'anon'}`;
         const cached = await redis.get(cacheKey);
-        
+
         if (cached !== null && cached !== undefined) {
             res.setHeader('X-Cache', 'HIT');
             return res.status(200).json(response(parseCachedPayload(cached), ttlSecs, true));

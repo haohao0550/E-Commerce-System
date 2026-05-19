@@ -15,7 +15,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
             error: {
                 code: 'VALIDATION_ERROR',
                 details: err.flatten().fieldErrors,
-            }
+            },
         });
     }
 
@@ -26,7 +26,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
             error: {
                 code: err.code,
                 details: err.details || [],
-            }
+            },
         });
     }
 
@@ -36,6 +36,6 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
         error: {
             code: 'INTERNAL_ERROR',
             details: [],
-        }
+        },
     });
 };

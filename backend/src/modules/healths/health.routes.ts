@@ -6,5 +6,5 @@ import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 const router = Router();
 
 router.get('/', auditLog('Health Check'), asyncHandler(HealthController.healthCheck));
-    
+
 export default router;

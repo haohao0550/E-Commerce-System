@@ -6,16 +6,13 @@ import addressRoutes from '@/modules/addresses/index.js';
 import uploadRoutes from '@/modules/upload/upload.route.js';
 import categoryRoutes from '@/modules/categories/categories.route.js';
 import productRoutes from '@/modules/products/products.route.js';
-import {
-  orderRoutes,
-  adminOrderRoutes
-} from '@/modules/orders/index.js'
+import { orderRoutes, adminOrderRoutes } from '@/modules/orders/index.js';
 import cartRoutes from '@/modules/carts/index.js';
 import {
-  productVariantsRoute,
-  adminProductVariantsRoute
-} from '@/modules/product-variant/index.js'
-import { couponRoutes , adminCouponRoutes } from '@/modules/coupons/index.js';
+    productVariantsRoute,
+    adminProductVariantsRoute,
+} from '@/modules/product-variant/index.js';
+import { couponRoutes, adminCouponRoutes } from '@/modules/coupons/index.js';
 import { reviewRoutes, adminReviewRoutes } from '@/modules/reviews/index.js';
 
 const router = Router();
@@ -31,11 +28,11 @@ router.use('/products', productRoutes);
 router.use('/orders', orderRoutes);
 router.use('/admin/orders', adminOrderRoutes);
 router.use('/carts', cartRoutes);
-router.use(productVariantsRoute)
-router.use('/admin', adminProductVariantsRoute)
-router.use('/coupons', couponRoutes)
-router.use('/admin/coupons', adminCouponRoutes)
-router.use(reviewRoutes)
-router.use('/admin', adminReviewRoutes)
+router.use(productVariantsRoute);
+router.use('/admin', adminProductVariantsRoute);
+router.use('/coupons', couponRoutes);
+router.use('/admin/coupons', adminCouponRoutes);
+router.use(reviewRoutes);
+router.use('/admin', adminReviewRoutes);
 
 export default router;

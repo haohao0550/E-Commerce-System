@@ -17,27 +17,23 @@ router.patch(
     '/me',
     auditLog('UPDATE_PROFILE'),
     validateBody(updateProfileSchema),
-    asyncHandler(userController.updateProfile)
+    asyncHandler(userController.updateProfile),
 );
 
 router.patch(
     '/me/password',
     auditLog('CHANGE_PASSWORD'),
     validateBody(changePasswordSchema),
-    asyncHandler(userController.changePassword)
+    asyncHandler(userController.changePassword),
 );
 
 router.patch(
     '/me/change-password',
     auditLog('CHANGE_PASSWORD'),
     validateBody(changePasswordSchema),
-    asyncHandler(userController.changePassword)
+    asyncHandler(userController.changePassword),
 );
 
-router.delete(
-    '/me',
-    auditLog('DELETE_ACCOUNT'),
-    asyncHandler(userController.deleteAccount)
-);
+router.delete('/me', auditLog('DELETE_ACCOUNT'), asyncHandler(userController.deleteAccount));
 
 export default router;
