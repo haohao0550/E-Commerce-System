@@ -9,6 +9,7 @@ import {
 } from './product-variants.schema.js'
 import { validateBody, validateParams, validateQuery } from '@/shared/middlewares/validate.middleware.js'
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js'
+import { auditLog } from '@/shared/middlewares/audit-log.middleware.js'
 
 const productVariantsRoute = Router()
 const adminProductVariantsRoute = Router()
@@ -16,12 +17,14 @@ const productVariantsController = new ProductVariantsController()
 
 productVariantsRoute.get(
   '/products/:productId/variants',
+  auditLog('GET_PRODUCT_VARIANTS_BY_PRODUCT_ID'),
   validateParams(productIdSchema),
   productVariantsController.getByProductId
 )
 
 productVariantsRoute.get(
   '/variants/:id',
+  auditLog('GET_PRODUCT_VARIANT_BY_ID'),
   validateParams(productVariantIdSchema),
   productVariantsController.getById
 )
@@ -30,18 +33,21 @@ adminProductVariantsRoute.use(authenticate, requireRole('ADMIN'))
 
 adminProductVariantsRoute.get(
   '/variants',
+  auditLog('ADMIN_GET_PRODUCT_VARIANTS'),
   validateQuery(getVariantsQuerySchema),
   productVariantsController.getAll
 )
 
 adminProductVariantsRoute.get(
   '/variants/:id',
+  auditLog('ADMIN_GET_PRODUCT_VARIANT_BY_ID'),
   validateParams(productVariantIdSchema),
   productVariantsController.getById
 )
 
 adminProductVariantsRoute.post(
   '/products/:productId/variants',
+  auditLog('ADMIN_CREATE_PRODUCT_VARIANT'),
   validateParams(productIdSchema),
   validateBody(createProductVariantSchema),
   productVariantsController.create
@@ -49,6 +55,7 @@ adminProductVariantsRoute.post(
 
 adminProductVariantsRoute.patch(
   '/variants/:id',
+  auditLog('ADMIN_UPDATE_PRODUCT_VARIANT'),
   validateParams(productVariantIdSchema),
   validateBody(updateProductVariantSchema),
   productVariantsController.update
@@ -56,6 +63,7 @@ adminProductVariantsRoute.patch(
 
 adminProductVariantsRoute.delete(
   '/variants/:id',
+  auditLog('ADMIN_DELETE_PRODUCT_VARIANT'),
   validateParams(productVariantIdSchema),
   productVariantsController.delete
 )

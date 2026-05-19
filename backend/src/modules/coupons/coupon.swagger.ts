@@ -32,10 +32,10 @@
  *       404:
  *         description: Coupon not found
  *
- * /admin/coupons:
+ * /coupons:
  *   get:
- *     summary: Admin get coupons
- *     tags: [Admin Coupon]
+ *     summary: Get coupons
+ *     tags: [Coupon]
  *     security:
  *       - bearerAuth: []
  *     parameters:

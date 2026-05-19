@@ -15,22 +15,22 @@ router.get('/me', asyncHandler(userController.getProfile));
 
 router.patch(
     '/me',
-    validateBody(updateProfileSchema),
     auditLog('UPDATE_PROFILE'),
+    validateBody(updateProfileSchema),
     asyncHandler(userController.updateProfile)
 );
 
 router.patch(
     '/me/password',
-    validateBody(changePasswordSchema),
     auditLog('CHANGE_PASSWORD'),
+    validateBody(changePasswordSchema),
     asyncHandler(userController.changePassword)
 );
 
 router.patch(
     '/me/change-password',
-    validateBody(changePasswordSchema),
     auditLog('CHANGE_PASSWORD'),
+    validateBody(changePasswordSchema),
     asyncHandler(userController.changePassword)
 );
 
