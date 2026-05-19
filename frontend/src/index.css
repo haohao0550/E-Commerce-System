@@ -737,3 +737,15 @@ input[type='range']::-webkit-slider-runnable-track {
 input[type='range']::-webkit-slider-thumb {
   @apply appearance-none h-4 w-4 bg-black rounded-full mt-[-7px] border-2 border-[#FBF9F9] shadow-sm transition-transform active:scale-125;
 }
+
+/* Custom CSS Classes for Cart/Checkout */
+.font-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.glass-nav {
+  @apply sticky top-0 z-50 w-full border-b border-outline-variant/30 bg-surface/80 backdrop-blur-xl;
+}
+

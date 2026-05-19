@@ -30,6 +30,23 @@ export interface OrderItem {
   variantInfo: string;
   price: number;
   quantity: number;
+  variant?: {
+    id: string;
+    productId: string;
+    sku: string;
+    color?: string;
+    size?: string;
+    price: number;
+    stock: number;
+    product?: {
+      id: string;
+      name: string;
+      slug: string;
+      description?: string;
+      basePrice: number;
+      images: string[] | string | any;
+    };
+  };
 }
 
 export interface Order {

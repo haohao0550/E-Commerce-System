@@ -3,10 +3,12 @@ import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import { ROUTES } from '@/routes';
 
 export const Header = () => {
   const { user, logout } = useAuth();
+  const { cartCount } = useCart();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -51,12 +53,20 @@ export const Header = () => {
               className="bg-transparent border-none focus:ring-0 text-sm ml-2 w-48 outline-none"
             />
           </div>
-
+ 
           <div className="flex gap-4 items-center">
-            {/* Cart Button */}
-            <button className="text-on-surface hover:opacity-70 transition-opacity relative p-1">
+            {/* Cart Button with Dynamic Badge */}
+            <Link 
+              href={ROUTES.cart}
+              className="text-on-surface hover:opacity-70 transition-opacity relative p-1 flex items-center justify-center"
+            >
               <ShoppingCart className="w-6 h-6" />
-            </button>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white shadow-sm font-mono">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
 
             {/* User Dropdown / Auth Link */}
             <div className="relative flex items-center">
