@@ -34,7 +34,15 @@ export class OrdersRepo implements IOrdersRepo {
                     createdAt: 'desc',
                 },
                 include: {
-                    items: true,
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true,
+                                },
+                            },
+                        },
+                    },
                     user: {
                         select: {
                             id: true,
@@ -55,7 +63,15 @@ export class OrdersRepo implements IOrdersRepo {
         return prisma.order.findUnique({
             where: { id },
             include: {
-                items: true,
+                items: {
+                    include: {
+                        variant: {
+                            include: {
+                                product: true,
+                            },
+                        },
+                    },
+                },
                 user: {
                     select: {
                         id: true,
@@ -91,7 +107,15 @@ export class OrdersRepo implements IOrdersRepo {
                     },
                 },
                 include: {
-                    items: true,
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 

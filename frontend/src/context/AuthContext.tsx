@@ -7,6 +7,7 @@ import { clearAccessToken } from '@/services/api-client';
 import { ROUTES } from '@/routes';
 import type { User } from '@/features/users/types/user';
 import { useToast } from './ToastContext';
+import { ACCESS_TOKEN_STORAGE_KEY } from '@/constants/api';
 
 interface AuthContextValue {
   user: User | null;
@@ -31,12 +32,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    refreshProfile()
-      .catch(() => {
-        clearAccessToken();
-        setUser(null);
-      })
-      .finally(() => setIsLoading(false));
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) : null;
+    if (token) {
+      refreshProfile()
+        .catch(() => {
+          clearAccessToken();
+          setUser(null);
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -46,13 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async login(payload) {
         const result = await authService.login(payload);
         setUser(result.user);
-        showToast('Signed in successfully', 'success');
         router.push(result.user.role === 'ADMIN' ? ROUTES.admin : ROUTES.home);
       },
       async register(payload) {
         const result = await authService.register(payload);
         setUser(result.user);
-        showToast('Account created successfully', 'success');
         router.push(ROUTES.home);
       },
       async logout() {
@@ -61,7 +65,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } finally {
           clearAccessToken();
           setUser(null);
-          showToast('Signed out', 'info');
           router.push(ROUTES.login);
         }
       },
