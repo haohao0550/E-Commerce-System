@@ -25,7 +25,6 @@ export const shippingAddressSchema = z.object({
   phone: z.string().regex(/^[0-9]{10,11}$/, 'Invalid phone number format'),
   street: z.string().min(5, 'Street must be at least 5 characters').max(200),
   ward: z.string().min(2).max(100).optional(),
-  district: z.string().min(2).max(100).optional(),
   province: z.string().min(2).max(100),
 });
 

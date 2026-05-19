@@ -52,7 +52,8 @@ export class ProductsRepo implements IProductsRepo {
               name: true,
               slug: true
             }
-          }
+          },
+          variants: true
         }
       }),
       prisma.product.count({ where })
@@ -71,7 +72,8 @@ export class ProductsRepo implements IProductsRepo {
             name: true,
             slug: true
           }
-        }
+        },
+        variants: true
       }
     })
   }
@@ -89,7 +91,8 @@ export class ProductsRepo implements IProductsRepo {
             name: true,
             slug: true
           }
-        }
+        },
+        variants: true
       }
     })
   }

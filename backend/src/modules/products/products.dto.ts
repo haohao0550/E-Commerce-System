@@ -1,4 +1,4 @@
-import type { Product } from '@/generated/prisma/client.js'
+import type { Product, ProductVariant } from '@/generated/prisma/client.js'
 
 export type ProductResponse = Product
 
@@ -33,6 +33,7 @@ export type ProductWithCategory = Product & {
     name: string
     slug: string
   } | null
+  variants?: ProductVariant[]
 }
 
 export type ProductCreateData = {
