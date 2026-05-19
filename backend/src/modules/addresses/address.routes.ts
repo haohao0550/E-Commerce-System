@@ -5,7 +5,6 @@ import { validateBody, validateParams, validateQuery } from '@/shared/middleware
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import * as addressSchema from './address.schema.js';
 import { asyncHandler } from '@/shared/errors/async-handler.error.js';
-import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js';
 
 const router = Router();
 const addressController = new AddressController();
@@ -16,7 +15,6 @@ router.get(
     authenticate, 
     requireRole('USER'),
     validateQuery(addressSchema.getAddressListSchema), 
-    cacheMiddleware('address:', 60),
     asyncHandler(addressController.getAllAddresses.bind(addressController))
 );
 

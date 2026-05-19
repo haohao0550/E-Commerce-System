@@ -8,15 +8,16 @@ import {
 import { validateBody, validateParams } from '@/shared/middlewares/validate.middleware.js'
 import { requireRole, authenticate } from '@/shared/middlewares/authenticate.middlware.js'
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js'
+import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js'
 
 const router = Router()
 const categoriesController = new CategoriesController()
 
-router.get('/',auditLog('category.getAllCategories'), categoriesController.getAll)
+router.get('/',auditLog('category.getAllCategories'), cacheMiddleware('category:', 60), categoriesController.getAll)
 
-router.get('/slug/:slug', auditLog('category.getBySlug'), categoriesController.getBySlug)
+router.get('/slug/:slug', auditLog('category.getBySlug'), cacheMiddleware('categorySlug:', 60), categoriesController.getBySlug)
 
-router.get('/:id', auditLog('category.getById'), validateParams(categoryIdSchema), categoriesController.getById)
+router.get('/:id', auditLog('category.getById'), validateParams(categoryIdSchema), cacheMiddleware('category:', 60), categoriesController.getById)
 
 router.post(
   '/',

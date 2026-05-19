@@ -10,6 +10,7 @@ import {
 import { validateBody, validateParams, validateQuery } from '@/shared/middlewares/validate.middleware.js'
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js'
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js'
+import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js'
 
 const productVariantsRoute = Router()
 const adminProductVariantsRoute = Router()
@@ -19,6 +20,7 @@ productVariantsRoute.get(
   '/products/:productId/variants',
   auditLog('GET_PRODUCT_VARIANTS_BY_PRODUCT_ID'),
   validateParams(productIdSchema),
+  cacheMiddleware('productVariantsByProductId:', 60),
   productVariantsController.getByProductId
 )
 
@@ -26,6 +28,7 @@ productVariantsRoute.get(
   '/variants/:id',
   auditLog('GET_PRODUCT_VARIANT_BY_ID'),
   validateParams(productVariantIdSchema),
+  cacheMiddleware('productVariantById:', 60),
   productVariantsController.getById
 )
 

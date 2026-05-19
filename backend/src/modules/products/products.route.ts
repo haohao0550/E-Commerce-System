@@ -17,6 +17,7 @@ import {
   requireRole
 } from '@/shared/middlewares/authenticate.middlware.js'
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js'
+import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js'
 
 const router = Router()
 const productsController = new ProductsController()
@@ -25,6 +26,7 @@ router.get(
   '/',
   auditLog('product.getAllProducts'),
   validateQuery(getProductsQuerySchema),
+  cacheMiddleware('products:', 60),
   productsController.getAll
 )
 
@@ -32,6 +34,7 @@ router.get(
   '/:id',
   auditLog('product.getProductById'),
   validateParams(productIdSchema),
+  cacheMiddleware('productById:', 60),
   productsController.getProductById
 )
 
@@ -76,6 +79,7 @@ router.get(
   '/:slug',
   auditLog('product.getProductBySlug'),
   validateParams(productSlugSchema),
+  cacheMiddleware('productBySlug:', 60),
   productsController.getBySlug
 )
 
