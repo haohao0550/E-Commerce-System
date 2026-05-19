@@ -11,10 +11,6 @@ import {
   orderRoutes,
   adminOrderRoutes
 } from '@/modules/orders/index.js'
-
-import uploadRoutes from '@/modules/upload/index.js';
-import categoryRoutes from '@/modules/categories/index.js';
-import productRoutes from '@/modules/products/index.js';
 import cartRoutes from '@/modules/carts/index.js';
 import {
   productVariantsRoute,
