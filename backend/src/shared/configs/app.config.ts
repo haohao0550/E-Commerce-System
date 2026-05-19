@@ -18,8 +18,9 @@ const envSchema = zod.object({
     EXPIRE_ACCESS_TOKEN: zod.string().default('15m'),
     EXPIRE_REFRESH_TOKEN: zod.string().default('7d'),
 
-    REDIS: requiredString,
-    
+    UPSTASH_REDIS_REST_URL: requiredString,
+    UPSTASH_REDIS_REST_TOKEN: requiredString,
+
     CLOUDINARY_NAME: requiredString,
     CLOUDINARY_API_KEY: requiredString,
     CLOUDINARY_API_SECRET: requiredString,
