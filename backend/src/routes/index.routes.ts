@@ -4,6 +4,14 @@ import authRoutes from '@/modules/auths/index.js';
 import userRoutes from '@/modules/users/index.js';
 import adminUserRoutes from '@/modules/users/index.js';
 import addressRoutes from '@/modules/addresses/index.js';
+import uploadRoutes from '@/modules/upload/upload.route.js';
+import categoryRoutes from '@/modules/categories/categories.route.js';
+import productRoutes from '@/modules/products/products.route.js';
+import {
+  orderRoutes,
+  adminOrderRoutes
+} from '@/modules/orders/index.js'
+
 import uploadRoutes from '@/modules/upload/index.js';
 import categoryRoutes from '@/modules/categories/index.js';
 import productRoutes from '@/modules/products/index.js';
@@ -24,6 +32,8 @@ router.use('/addresses', addressRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
+router.use('/orders', orderRoutes);
+router.use('/admin/orders', adminOrderRoutes);
 router.use('/carts', cartRoutes);
 router.use(productVariantsRoute)
 router.use('/admin', adminProductVariantsRoute)
