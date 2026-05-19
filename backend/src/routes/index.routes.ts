@@ -17,6 +17,7 @@ import {
   adminProductVariantsRoute
 } from '@/modules/product-variant/index.js'
 import { couponRoutes , adminCouponRoutes } from '@/modules/coupons/index.js';
+import { reviewRoutes, adminReviewRoutes } from '@/modules/reviews/index.js';
 
 const router = Router();
 
@@ -35,5 +36,7 @@ router.use(productVariantsRoute)
 router.use('/admin', adminProductVariantsRoute)
 router.use('/coupons', couponRoutes)
 router.use('/admin/coupons', adminCouponRoutes)
+router.use(reviewRoutes)
+router.use('/admin', adminReviewRoutes)
 
 export default router;
