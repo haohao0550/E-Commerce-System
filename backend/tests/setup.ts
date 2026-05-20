@@ -1,5 +1,5 @@
 import { beforeAll, afterAll } from 'vitest';
-import prisma from './db.config.js';
+import prisma from './helper/db.config.js';
 
 beforeAll(async () => {
     await prisma.$connect();
