@@ -24,6 +24,8 @@ orderRoutes.use(authenticate);
 
 orderRoutes.post(
     '/',
+    authenticate,
+    requireRole('USER'),
     auditLog('order.createOrder'),
     validateBody(createOrderSchema),
     asyncHandler(ordersController.createOrder),
@@ -31,6 +33,7 @@ orderRoutes.post(
 
 orderRoutes.get(
     '/',
+    authenticate,
     auditLog('order.getUserOrders'),
     validateQuery(getOrdersQuerySchema),
     asyncHandler(ordersController.getUserOrders),
@@ -38,6 +41,7 @@ orderRoutes.get(
 
 orderRoutes.get(
     '/:id',
+    authenticate,
     auditLog('order.getUserOrderById'),
     validateParams(orderIdSchema),
     asyncHandler(ordersController.getUserOrderById),
@@ -45,6 +49,7 @@ orderRoutes.get(
 
 orderRoutes.patch(
     '/:id/cancel',
+    authenticate,
     auditLog('order.cancelOrder'),
     validateParams(orderIdSchema),
     asyncHandler(ordersController.cancelOrder),

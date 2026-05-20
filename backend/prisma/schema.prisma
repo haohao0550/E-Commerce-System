@@ -198,6 +198,10 @@ model Order {
   finalPrice      Decimal       @db.Decimal(10, 2)
 
   shippingAddress Json
+  // Payment gateway fields from MoMo
+  paymentOrderId   String?
+  paymentRequestId String?
+  paymentOrderInfo String?
 
   couponId        String?
   note            String?
