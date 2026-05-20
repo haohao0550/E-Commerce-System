@@ -22,8 +22,10 @@ import { PageLoader } from '@/components/common/PageLoader';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
 import { useAddress } from '@/context/AddressContext';
+import { useCart } from '@/context/CartContext';
 import { productService } from '@/features/products/services/product.service';
 import { orderService } from '@/features/orders/services/order.service';
+import { cartService } from '@/services/cart.service';
 import type { Product, ProductVariant } from '@/features/products/types/product';
 import { ROUTES } from '@/routes';
 
@@ -33,6 +35,7 @@ export default function UserProductDetailPage() {
   const { showToast } = useToast();
   const { user } = useAuth();
   const { addresses } = useAddress();
+  const { refreshCart } = useCart();
 
   // --- States ---
   const [product, setProduct] = useState<Product | null>(null);
@@ -164,17 +167,25 @@ export default function UserProductDetailPage() {
   const isOutOfStock = variants.length > 0 && (!selectedVariant || displayStock === 0);
 
   // --- Handlers ---
-  const handleAddToCart = () => {
-    if (isOutOfStock) return;
+  const handleAddToCart = async () => {
+    if (isOutOfStock || !selectedVariant) return;
+
+    if (!user) {
+      showToast('Please sign in to add items to your cart', 'info');
+      void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
 
     setIsAddingToCart(true);
-    setTimeout(() => {
+    try {
+      await cartService.addToCart(selectedVariant.id, quantity);
+      await refreshCart();
+    } catch (err: any) {
+      console.error('Failed to add to cart:', err);
+      showToast(err.message || 'Failed to add item to cart', 'error');
+    } finally {
       setIsAddingToCart(false);
-      showToast(
-        `Added ${quantity}x "${product.name}"${selectedVariant ? ` (${selectedColor} / US ${selectedSize})` : ''} to your cart!`,
-        'success'
-      );
-    }, 1000);
+    }
   };
 
   const handleBuyNow = () => {

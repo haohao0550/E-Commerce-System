@@ -121,11 +121,7 @@ export default function ProfilePage() {
         <section className="md:col-span-9 space-y-12">
           {activeTab === 'details' && <ProfileForm />}
           
-          {activeTab === 'orders' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <RecentOrder />
-            </div>
-          )}
+          {activeTab === 'orders' && <RecentOrder />}
           
           {activeTab === 'addresses' && <ShippingAddress />}
 
