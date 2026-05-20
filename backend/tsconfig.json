@@ -4,15 +4,19 @@
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "outDir": "dist",
-        "rootDir": "src",
+        "rootDir": ".",         // 1. Đổi từ "src" thành "." để cho phép đọc file config ở gốc
         "strict": true,
         "esModuleInterop": true,
-        "ignoreDeprecations": "5.0",
+        "ignoreDeprecations": "6.0",
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"]
-        }
+        },
+        "types": ["node"]       // 2. Khai báo rõ ràng types node ở đây
     },
-    "include": ["src"],
-    "exclude": []
+    "include": [
+        "src/**/*", 
+        "prisma.config.ts"      // 3. Cho phép quét thêm file config này
+    ],
+    "exclude": ["node_modules", "dist"]
 }

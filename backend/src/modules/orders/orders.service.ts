@@ -87,8 +87,8 @@ export class OrdersService {
                 );
             }
 
-            // Giả sử mã giảm giá là số tiền trừ thẳng (fixed discount)
-            discountAmount = Number(coupon.discount);
+            // Áp dụng phần trăm giảm giá theo thiết kế coupon admin
+            discountAmount = (totalPrice * Number(coupon.discount)) / 100;
             if (coupon.maxDiscount && discountAmount > Number(coupon.maxDiscount)) {
                 discountAmount = Number(coupon.maxDiscount);
             }

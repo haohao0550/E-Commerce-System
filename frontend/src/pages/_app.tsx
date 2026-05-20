@@ -1,7 +1,6 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import dynamic from 'next/dynamic';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { AddressProvider } from '@/context/AddressContext';
@@ -12,7 +11,8 @@ import '@/index.css';
 
 function AppContent({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const isAdminRoute = router.pathname.startsWith('/admin');
+  const pathname = router.pathname || '';
+  const isAdminRoute = pathname.startsWith('/admin');
 
   return (
     <>
@@ -38,16 +38,13 @@ function AppContent({ Component, pageProps }: AppProps) {
   );
 }
 
-// Disable SSR for the entire AppContent to completely bypass any hydration mismatches globally
-const SafeApp = dynamic(() => Promise.resolve(AppContent), { ssr: false });
-
 export default function App(props: AppProps) {
   return (
     <ToastProvider>
       <AuthProvider>
         <AddressProvider>
           <CartProvider>
-            <SafeApp {...props} />
+            <AppContent {...props} />
           </CartProvider>
         </AddressProvider>
       </AuthProvider>

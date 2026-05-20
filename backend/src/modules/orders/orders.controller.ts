@@ -21,7 +21,7 @@ export class OrdersController {
 
     getUserOrders = async (req: Request, res: Response) => {
         const userId = req.user?.userId as string;
-        const query = { ...req.query, userId };
+        const query = { ...(req.validatedQuery || req.query), userId };
         const result = await this.ordersService.getOrders(query);
 
         return res.status(200).json({
@@ -63,7 +63,7 @@ export class OrdersController {
     // ==========================================
 
     getAllOrders = async (req: Request, res: Response) => {
-        const result = await this.ordersService.getOrders(req.query);
+        const result = await this.ordersService.getOrders(req.validatedQuery || req.query);
 
         return res.status(200).json({
             success: true,
