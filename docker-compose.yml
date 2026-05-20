@@ -15,6 +15,18 @@ services:
     networks:
       - mini_ecommerce_network
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: mini_ecommerce_ngrok
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    command: ["http", "backend:8080"]
+    depends_on:
+      - backend
+    networks:
+      - mini_ecommerce_network
+
   frontend:
     build:
       context: ./frontend
