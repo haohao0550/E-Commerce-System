@@ -6,7 +6,7 @@ export class ProductVariantsController {
     constructor(private readonly productVariantsService = new ProductVariantsService()) {}
 
     getAll = asyncHandler(async (req: Request, res: Response) => {
-        const result = await this.productVariantsService.getAll(req.query);
+        const result = await this.productVariantsService.getAll(req.validatedQuery || req.query);
 
         return res.status(200).json({
             success: true,

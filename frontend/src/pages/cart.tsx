@@ -28,6 +28,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAddress } from '@/context/AddressContext';
 import { useCart } from '@/context/CartContext';
 import { cartService, CartItem } from '@/services/cart.service';
+import { couponService, ValidateCouponResponse } from '@/features/coupons/services/coupon.service';
 import { orderService } from '@/features/orders/services/order.service';
 import { ROUTES } from '@/routes';
 
@@ -45,6 +46,11 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'momo'>('cod');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderSuccessId, setOrderSuccessId] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [validatedCoupon, setValidatedCoupon] = useState<ValidateCouponResponse | null>(null);
 
   const defaultImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2670&auto=format&fit=crop';
 
@@ -83,12 +89,52 @@ export default function CartPage() {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    const trimmedCode = couponCode.trim();
+    if (!trimmedCode) {
+      setCouponError('Please enter a coupon code');
+      setCouponSuccess(null);
+      setValidatedCoupon(null);
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+    setCouponSuccess(null);
+
+    try {
+      const result = await couponService.validateCoupon({ code: trimmedCode, orderValue: subtotal });
+      setValidatedCoupon(result);
+      setCouponSuccess(`Coupon ${result.coupon.code} applied successfully`);
+    } catch (err: any) {
+      setValidatedCoupon(null);
+      setCouponError(err?.message || 'Failed to apply coupon');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setValidatedCoupon(null);
+    setCouponSuccess(null);
+    setCouponError(null);
+  };
+
   // --- Summary calculations ---
   const subtotal = cartItems.reduce((sum, item) => sum + Number(item.variant.price) * item.quantity, 0);
   const shipping = 0;
-  const total = subtotal + shipping;
+  const discountAmount = validatedCoupon?.discountAmount ?? 0;
+  const total = Math.max(subtotal + shipping - discountAmount, 0);
 
   const isVnd = subtotal > 10000 || cartItems.some(item => Number(item.variant.price) > 10000);
+
+  useEffect(() => {
+    if (validatedCoupon && validatedCoupon.orderValue !== subtotal) {
+      setValidatedCoupon(null);
+      setCouponError('Cart changed. Please reapply your coupon.');
+      setCouponSuccess(null);
+    }
+  }, [subtotal, validatedCoupon]);
 
   const formatPrice = (price: number) => {
     if (isVnd) {
@@ -125,6 +171,7 @@ export default function CartPage() {
           variantId: item.variantId,
           quantity: item.quantity,
         })),
+        couponId: validatedCoupon?.coupon.id,
       };
 
       const newOrder = await orderService.createOrder(orderPayload);
@@ -414,6 +461,60 @@ export default function CartPage() {
                   );
                 })}
               </AnimatePresence>
+            </div>
+
+            {/* Coupon */}
+            <div className="space-y-4 mb-6">
+              <div className="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Have a coupon?</div>
+              <div className="flex gap-3">
+                <input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter coupon code"
+                  className="flex-1 rounded-xl border border-outline-variant/60 bg-white px-4 py-3 text-sm text-black outline-none focus:border-black"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={isValidatingCoupon || subtotal === 0}
+                  className={`rounded-xl px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${isValidatingCoupon || subtotal === 0
+                    ? 'bg-outline/50 text-on-surface-variant cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-black/90'
+                  }`}
+                >
+                  {isValidatingCoupon ? 'Applying...' : 'Apply'}
+                </button>
+              </div>
+
+              {couponError && (
+                <p className="text-sm text-red-600 font-medium">{couponError}</p>
+              )}
+
+              {couponSuccess && !couponError && (
+                <p className="text-sm text-emerald-600 font-medium">{couponSuccess}</p>
+              )}
+
+              {validatedCoupon && (
+                <div className="rounded-3xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-bold uppercase tracking-widest">{validatedCoupon.coupon.code}</p>
+                      <p className="text-xs text-emerald-800">Discount applied to order</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-[10px] font-black uppercase tracking-widest text-emerald-900/80 hover:text-emerald-900"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="mt-3 flex justify-between text-sm">
+                    <span>Discount</span>
+                    <span className="font-bold">{formatPrice(validatedCoupon.discountAmount)}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Totals */}
