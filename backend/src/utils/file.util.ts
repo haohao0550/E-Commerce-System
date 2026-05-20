@@ -1,1 +1,8 @@
-export const filesEndpoint = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
+export const filesEndpoint = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/jpg',
+  'image/webp',
+  'image/avif'
+]
