@@ -27,5 +27,11 @@
     "eslint-config-next": "^16.1.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.0"
-  }
+  },
+  "description": "Next.js frontend for the mini e-commerce backend.",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }

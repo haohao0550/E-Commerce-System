@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mini_ecommerce_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+    ports:
+      - "8081:8080"
+    networks:
+      - mini_ecommerce_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8081/api/v1}
+    container_name: mini_ecommerce_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8081/api/v1}
+    ports:
+      - "3001:3000"
+    networks:
+      - mini_ecommerce_network
+
+  backend-db-push:
+    profiles:
+      - tools
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: mini_ecommerce_backend_db_push
+    restart: "no"
+    env_file:
+      - ./backend/.env
+    command: ["npx", "prisma", "db", "push"]
+    networks:
+      - mini_ecommerce_network
+
+networks:
+  mini_ecommerce_network:
+    driver: bridge

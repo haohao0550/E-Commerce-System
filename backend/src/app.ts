@@ -7,10 +7,12 @@ import { globalLimiter } from '@/shared/middlewares/rate-limit.middleware.js';
 import { correlationID } from '@/shared/middlewares/correlation-id.middleware.js';
 import { requestLogger } from '@/shared/middlewares/request-logger.middleware.js';
 import { errorHandler } from '@/shared/middlewares/error-handler.middleware.js';
+import { corsMiddleware } from './shared/middlewares/cors.middleware.js';
 import cookieParser from 'cookie-parser';
 
 const app = express();
 
+app.use(corsMiddleware);
 app.use(globalLimiter);
 app.use(cookieParser());
 app.use(helmet());
