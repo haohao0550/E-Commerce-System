@@ -30,7 +30,6 @@ router.post('/refresh', authLimiter, asyncHandler(authController.refreshToken));
 router.post(
     '/logout',
     authenticate,
-    requireRole('USER', 'ADMIN'),
     auditLog('LOGOUT'),
     asyncHandler(authController.logout),
 );
