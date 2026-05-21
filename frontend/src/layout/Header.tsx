@@ -23,7 +23,7 @@ export const Header = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30">
-      <div className="max-w-[1440px] mx-auto px-10 py-4 flex justify-between items-center w-full">
+      <div className="mx-auto px-10 py-4 flex justify-between items-center w-full">
         {/* Brand & Desktop Navigation */}
         <div className="flex items-center gap-12">
           <Link href={ROUTES.home} className="text-headline-md font-bold tracking-tight text-on-surface hover:opacity-85 transition-opacity">

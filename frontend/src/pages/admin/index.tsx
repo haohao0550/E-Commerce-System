@@ -96,11 +96,9 @@ export default function AdminDashboardPage() {
   }, [user, showToast]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-    }).format(value);
+    return `${new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 0,
+    }).format(value)} vnd`;
   };
 
 
@@ -181,7 +179,7 @@ export default function AdminDashboardPage() {
       <Sidebar />
 
       {/* Main Content Workspace */}
-      <main className="flex-1 ml-64 p-10 max-w-[1440px] mx-auto w-full">
+      <main className="flex-1 ml-64 p-10 w-full">
         {/* Header Block */}
         <header className="mb-12">
           <motion.div
@@ -325,7 +323,7 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       <span className="text-sm font-black text-on-surface font-mono">
-                        ${Number(prod.basePrice).toFixed(2)}
+                        {formatCurrency(Number(prod.basePrice))}
                       </span>
                     </div>
                   ))}
@@ -563,23 +561,23 @@ export default function AdminDashboardPage() {
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         {chartType === 'bar' ? (
-                          <BarChart data={revenueChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                          <BarChart data={revenueChartData} margin={{ top: 0, right: 12, left: 12, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
                             <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                             <YAxis
                               tick={{ fontSize: 11 }}
-                              tickFormatter={(value) => formatCurrency(Number(value))}
+                              tickFormatter={(value) => formatCurrency(Number(value)).slice(0, -8) + 'K'}
                             />
                             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                             <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
                           </BarChart>
                         ) : (
-                          <LineChart data={revenueChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                          <LineChart data={revenueChartData} margin={{ top: 0, right: 12, left: 12, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
                             <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                             <YAxis
                               tick={{ fontSize: 11 }}
-                              tickFormatter={(value) => formatCurrency(Number(value))}
+                              tickFormatter={(value) => formatCurrency(Number(value)).slice(0, -8) + 'K'}
                             />
                             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                             <Line

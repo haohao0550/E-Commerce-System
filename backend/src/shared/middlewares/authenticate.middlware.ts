@@ -31,7 +31,6 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
             throw new AppError('User account has been deleted', 401, 'USER_DELETED');
         }
 
-        // Kiểm tra xem session (Refresh Token) đã bị thu hồi chưa
         const refreshToken = await prisma.refreshToken.findUnique({
             where: { jti: decoded.jti },
         });
@@ -42,7 +41,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 
         req.user = decoded;
 
-        next();
+        return next();
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             return next(new AppError('Token expired', 401, 'TOKEN_EXPIRED'));
@@ -50,7 +49,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
         if (error instanceof jwt.JsonWebTokenError) {
             return next(new AppError('Invalid token', 401, 'INVALID_TOKEN'));
         }
-        next(error);
+        return next(error);
     }
 };
 
@@ -59,6 +58,6 @@ export const requireRole = (...roles: string[]) => {
         if (!roles.includes(req.user?.role!)) {
             return next(new AppError('Forbidden', 403, 'FORBIDDEN'));
         }
-        next();
+        return next();
     };
 };

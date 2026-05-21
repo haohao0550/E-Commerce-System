@@ -162,7 +162,7 @@ export default function AllProductsPage() {
 
   return (
     <div className="min-h-screen bg-surface-lowest flex flex-col font-sans selection:bg-black selection:text-white">
-      <main className="flex-1 max-w-[1440px] mx-auto w-full px-6 md:px-10 pb-20">
+      <main className="flex-1 mx-auto w-full px-6 md:px-10 pb-20">
         
         {/* Editorial Page Hero Section */}
         <section className="py-16 md:py-20 border-b border-outline-variant/20 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">

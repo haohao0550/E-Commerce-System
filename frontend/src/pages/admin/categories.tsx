@@ -146,7 +146,7 @@ export default function AdminCategoriesPage() {
       <Sidebar />
 
       {/* Main Workspace */}
-      <main className="flex-1 ml-64 p-10 max-w-[1440px] mx-auto w-full">
+      <main className="flex-1 ml-64 p-10 mx-auto w-full">
         {/* Header Console */}
         <header className="mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <motion.div
@@ -185,7 +185,6 @@ export default function AdminCategoriesPage() {
 
           <div className="bg-white border border-surface-container-highest p-6 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">Sneaker Catalog</span>
               <Link href="/admin/products">
                 <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-brand-primary hover:opacity-85 transition-opacity mt-3 cursor-pointer">
                   <span>Manage Drops</span>
@@ -245,10 +244,10 @@ export default function AdminCategoriesPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-brand-primary text-brand-on-primary">
-                    <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Category Name</th>
-                    <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Created Date</th>
-                    <th className="py-5 px-8 text-xs font-black uppercase tracking-widest text-right">Actions</th>
+                  <tr className="bg-black [&>th]:!text-white [&>th]:!font-black">
+                    <th className="py-5 px-8 text-xs uppercase tracking-widest">Category Name</th>
+                    <th className="py-5 px-8 text-xs uppercase tracking-widest">Created Date</th>
+                    <th className="py-5 px-8 text-xs uppercase tracking-widest text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-container-high">
@@ -270,8 +269,8 @@ export default function AdminCategoriesPage() {
                             <span>{new Date(cat.createdAt).toLocaleDateString('en-US', { dateStyle: 'medium' })}</span>
                           </div>
                         </td>
-                        <td className="py-5 px-8 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="py-5 px-8 text-center">
+                          <div className="flex items-center justify-center gap-2">
                             <button
                               type="button"
                               onClick={() => handleOpenEditModal(cat)}

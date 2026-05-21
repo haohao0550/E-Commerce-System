@@ -139,7 +139,7 @@ export default function UserProductDetailPage() {
 
   if (!product) {
     return (
-      <main className="max-w-[1440px] mx-auto px-6 md:px-10 py-20 flex flex-col items-center justify-center min-h-[50vh]">
+      <main className="mx-auto px-6 md:px-10 py-20 flex flex-col items-center justify-center min-h-[50vh]">
         <div className="text-center space-y-6 max-w-md">
           <h2 className="text-3xl font-display font-black text-black uppercase tracking-tighter">Sneaker Not Found</h2>
           <p className="text-on-surface-variant font-medium">The product you are trying to view does not exist or has been retired from our catalog.</p>
@@ -295,7 +295,7 @@ export default function UserProductDetailPage() {
   return (
     <div className="bg-surface-lowest min-h-screen font-sans selection:bg-black selection:text-white relative overflow-x-hidden">
       {/* Breadcrumbs / Back Bar */}
-      <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-6">
+      <div className="mx-auto px-6 md:px-10 py-6">
         <Link
           href={ROUTES.home}
           className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant hover:text-black transition-colors group"
@@ -306,7 +306,7 @@ export default function UserProductDetailPage() {
       </div>
 
       {/* Main Workspace Catalog View */}
-      <main className="max-w-[1440px] mx-auto px-6 md:px-10 pb-24">
+      <main className="mx-auto px-6 md:px-10 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
 
           {/* Left Column: Premium Gallery Showcase */}

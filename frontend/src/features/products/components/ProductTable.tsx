@@ -23,6 +23,11 @@ export const ProductTable = ({
   onRowClick,
 }: ProductTableProps) => {
   const defaultImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2670&auto=format&fit=crop';
+  const formatCurrency = (value: number) => {
+    return `${new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 0,
+    }).format(value)} vnd`;
+  };
 
   // --- Shimmer Skeleton Loader ---
   if (isLoading) {
@@ -72,13 +77,13 @@ export const ProductTable = ({
         <table className="w-full text-left border-collapse">
           {/* Header */}
           <thead>
-            <tr className="bg-brand-primary text-brand-on-primary">
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Product</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Category</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Price</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Stock</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Status</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest text-right">Actions</th>
+            <tr className="bg-black [&>th]:!text-white [&>th]:!font-black">
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Product</th>
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Category</th>
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Price</th>
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Stock</th>
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Status</th>
+              <th className="py-4 px-6 text-xs uppercase tracking-widest">Actions</th>
             </tr>
           </thead>
 
@@ -100,9 +105,9 @@ export const ProductTable = ({
                     className="group hover:bg-surface-base/50 transition-colors cursor-pointer"
                   >
                     {/* Column 1: Image, Name, and SKU */}
-                    <td className="py-5 px-8">
-                      <div className="flex items-center gap-6">
-                        <div className={`w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-surface-container-highest transition-transform group-hover:scale-105 duration-500 shadow-sm ${status === 'Inactive' ? 'grayscale opacity-60' : ''}`}>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-surface-container-highest transition-transform group-hover:scale-105 duration-500 shadow-sm ${status === 'Inactive' ? 'grayscale opacity-60' : ''}`}>
                           <img 
                             src={mainImage} 
                             alt={product.name} 
@@ -111,7 +116,7 @@ export const ProductTable = ({
                           />
                         </div>
                         <div>
-                          <p className="text-xl font-display font-bold text-on-surface leading-tight">{product.name}</p>
+                          <p className="text-lg font-display font-bold text-on-surface leading-tight">{product.name}</p>
                           <p className="text-xs font-semibold text-on-surface-variant/60 mt-1 uppercase tracking-tight font-mono">
                             SKU: {product.slug.toUpperCase().slice(0, 10)}
                           </p>
@@ -120,19 +125,19 @@ export const ProductTable = ({
                     </td>
 
                     {/* Column 2: Category */}
-                    <td className="py-5 px-8">
+                    <td className="py-4 px-6">
                       <span className="text-sm font-semibold text-on-surface-variant font-mono">{categoryName}</span>
                     </td>
 
                     {/* Column 3: Price */}
-                    <td className="py-5 px-8">
+                    <td className="py-4 px-6">
                       <span className="text-base font-black text-on-surface font-mono">
-                        ${Number(product.basePrice).toFixed(2)}
+                        {formatCurrency(Number(product.basePrice))}
                       </span>
                     </td>
 
                     {/* Column 4: Stock */}
-                    <td className="py-5 px-8">
+                    <td className="py-4 px-6">
                       {(() => {
                         const totalStock = product.variants ? product.variants.reduce((sum, v) => sum + v.stock, 0) : 0;
                         const variantCount = product.variants ? product.variants.length : 0;
@@ -154,19 +159,14 @@ export const ProductTable = ({
                     </td>
 
                     {/* Column 5: Status Badge */}
-                    <td className="py-5 px-8">
-                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
-                        status === 'Active' 
-                          ? 'bg-brand-primary text-brand-on-primary border-brand-primary shadow-sm' 
-                          : 'bg-surface-container-highest text-on-surface-variant border-surface-container-high'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${status === 'Active' ? 'bg-white blink' : 'bg-on-surface-variant/40'}`} />
+                    <td className="py-4 px-6 align-middle whitespace-nowrap text-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-black">
                         {status}
                       </span>
                     </td>
 
                     {/* Column 6: Action Buttons */}
-                    <td className="py-5 px-8 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           type="button"
@@ -191,6 +191,18 @@ export const ProductTable = ({
           </tbody>
         </table>
       </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes blinkStatus {
+          0%, 100% { background-color: #ffffff; }
+          50% { background-color: #16a34a; }
+        }
+        .blink-status {
+          animation: blinkStatus 1.6s ease-in-out infinite;
+        }
+      `,
+      }} />
     </motion.section>
   );
 };

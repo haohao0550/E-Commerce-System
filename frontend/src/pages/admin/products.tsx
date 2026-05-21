@@ -7,6 +7,7 @@ import { ProductHeader } from '@/features/products/components/ProductHeader';
 import { ProductFilters } from '@/features/products/components/ProductFilters';
 import { ProductTable } from '@/features/products/components/ProductTable';
 import { ProductPagination } from '@/features/products/components/ProductPagination';
+import { ProductFormModal } from '@/features/products/components/ProductFormModal';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { productService } from '@/features/products/services/product.service';
@@ -29,6 +30,8 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // --- Categories State Management ---
   const [categories, setCategories] = useState<Category[]>([]);
@@ -111,7 +114,8 @@ export default function AdminProductsPage() {
 
   // --- Action Handlers ---
   const handleAddProduct = () => {
-    showToast('Add product dialog is ready to be linked!', 'info');
+    setEditingProduct(null);
+    setIsProductModalOpen(true);
   };
 
   const handleExport = () => {
@@ -119,7 +123,14 @@ export default function AdminProductsPage() {
   };
 
   const handleEditProduct = (product: Product) => {
-    showToast(`Editing product: ${product.name}`, 'info');
+    setEditingProduct(product);
+    setIsProductModalOpen(true);
+  };
+
+  const handleProductSaved = async () => {
+    setIsProductModalOpen(false);
+    setEditingProduct(null);
+    await fetchProducts();
   };
 
   const handleDeleteProduct = async (product: Product) => {
@@ -158,7 +169,7 @@ export default function AdminProductsPage() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-64 p-10 max-w-[1440px] mx-auto w-full">
+      <main className="flex-1 ml-64 p-10 mx-auto w-full">
         {/* Dynamic Responsive Product Header */}
         <ProductHeader
           onAddProductClick={handleAddProduct}
@@ -194,6 +205,17 @@ export default function AdminProductsPage() {
           onNextPage={() => setCurrentPage((prev) => prev + 1)}
         />
       </main>
+
+      <ProductFormModal
+        open={isProductModalOpen}
+        categories={categories}
+        initialProduct={editingProduct}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onSuccess={() => void handleProductSaved()}
+      />
 
       {/* Dynamic Keyframes inject */}
       <style dangerouslySetInnerHTML={{
