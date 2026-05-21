@@ -28,7 +28,7 @@ export const Sidebar = () => {
     { id: 'categories', label: 'Categories', icon: Layers, path: ROUTES.adminCategories },
     { id: 'users', label: 'Users', icon: Users, path: ROUTES.adminUsers },
     { id: 'orders', label: 'Orders', icon: ShoppingCart, path: ROUTES.adminOrders },
-    { id: 'coupons', label: 'Coupons', icon: TicketPercent, path: '#' },
+    { id: 'coupons', label: 'Coupons', icon: TicketPercent, path: ROUTES.adminCoupons },
   ];
 
   return (

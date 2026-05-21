@@ -23,8 +23,7 @@ const parseCachedPayload = (cached: unknown) => {
 
 export const cacheMiddleware = (keyPrefix: string, ttlSecs: number) => {
     return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-        const cacheKey = `${keyPrefix}:${req.method}:${req.originalUrl}:${req.user?.userId ?? 'anon'}`;
-        const cached = await redis.get(cacheKey);
+        const cached = await redis.get(keyPrefix);
 
         if (cached !== null && cached !== undefined) {
             res.setHeader('X-Cache', 'HIT');
@@ -37,10 +36,22 @@ export const cacheMiddleware = (keyPrefix: string, ttlSecs: number) => {
         const origJson = res.json.bind(res);
         res.json = (body) => {
             if (res.statusCode >= 200 && res.statusCode < 300) {
-                void redis.set(cacheKey, body, { ex: ttlSecs });
+                void redis.set(keyPrefix, body, { ex: ttlSecs });
             }
             return origJson(response(body, ttlSecs, false));
         };
         next();
     });
+};
+
+export const clearCache = (keyPrefix: string[]) => {
+    return async (_req: Request, _res: Response, next: NextFunction) => {
+        try {
+            await Promise.all(keyPrefix.map((key) => redis.del(key)));
+
+            return next();
+        } catch (error) {
+            return next(error);
+        }
+    };
 };

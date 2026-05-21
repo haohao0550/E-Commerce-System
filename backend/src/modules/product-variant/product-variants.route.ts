@@ -14,17 +14,25 @@ import {
 } from '@/shared/middlewares/validate.middleware.js';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
-import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js';
+import { cacheMiddleware, clearCache } from '@/shared/middlewares/cache.middleware.js';
 
 const productVariantsRoute = Router();
 const adminProductVariantsRoute = Router();
 const productVariantsController = new ProductVariantsController();
+const cacheKeys = [
+    'productVariantsByProductId',
+    'productVariantById',
+    'dashboardTopProducts',
+    'productById',
+    'productBySlug',
+    'products',
+];
 
 productVariantsRoute.get(
     '/products/:productId/variants',
     auditLog('GET_PRODUCT_VARIANTS_BY_PRODUCT_ID'),
     validateParams(productIdSchema),
-    cacheMiddleware('productVariantsByProductId:', 60),
+    cacheMiddleware('productVariantsByProductId', 60),
     productVariantsController.getByProductId,
 );
 
@@ -32,7 +40,7 @@ productVariantsRoute.get(
     '/variants/:id',
     auditLog('GET_PRODUCT_VARIANT_BY_ID'),
     validateParams(productVariantIdSchema),
-    cacheMiddleware('productVariantById:', 60),
+    cacheMiddleware('productVariantById', 60),
     productVariantsController.getById,
 );
 
@@ -57,6 +65,7 @@ adminProductVariantsRoute.post(
     auditLog('ADMIN_CREATE_PRODUCT_VARIANT'),
     validateParams(productIdSchema),
     validateBody(createProductVariantSchema),
+    clearCache(cacheKeys),
     productVariantsController.create,
 );
 
@@ -65,6 +74,7 @@ adminProductVariantsRoute.patch(
     auditLog('ADMIN_UPDATE_PRODUCT_VARIANT'),
     validateParams(productVariantIdSchema),
     validateBody(updateProductVariantSchema),
+    clearCache(cacheKeys),
     productVariantsController.update,
 );
 
@@ -72,6 +82,7 @@ adminProductVariantsRoute.delete(
     '/variants/:id',
     auditLog('ADMIN_DELETE_PRODUCT_VARIANT'),
     validateParams(productVariantIdSchema),
+    clearCache(cacheKeys),
     productVariantsController.delete,
 );
 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { 
   ChevronLeft, 
   Edit, 
+  Trash2,
   Layers, 
   Package, 
   Copy, 
@@ -22,8 +23,13 @@ import { Sidebar } from '@/layout/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { productService } from '@/features/products/services/product.service';
+import { productVariantService } from '@/features/products/services/product-variant.service';
+import { ProductVariantModal } from '@/features/products/components/ProductVariantModal';
+import { ProductFormModal } from '@/features/products/components/ProductFormModal';
+import { categoryService } from '@/features/categories/services/category.service';
 import { ROUTES } from '@/routes';
-import type { Product } from '@/features/products/types/product';
+import type { Product, ProductVariant } from '@/features/products/types/product';
+import type { Category } from '@/features/categories/types/category';
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -36,26 +42,48 @@ export default function AdminProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
+
+  const formatCurrency = (value: number) => {
+    return `${new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 0,
+    }).format(value)} vnd`;
+  };
 
   // --- Fetch Product Detail ---
+  const fetchProduct = async (productId: string) => {
+    setIsLoading(true);
+    try {
+      const data = await productService.getProductById(productId);
+      setProduct(data);
+    } catch (err: any) {
+      console.error('Error fetching product details:', err);
+      showToast(err.message || 'Failed to load product details', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!id || typeof id !== 'string') return;
+    void fetchProduct(id);
+  }, [id]);
 
-    const fetchProduct = async () => {
-      setIsLoading(true);
+  useEffect(() => {
+    const fetchCategories = async () => {
       try {
-        const data = await productService.getProductById(id);
-        setProduct(data);
-      } catch (err: any) {
-        console.error('Error fetching product details:', err);
-        showToast(err.message || 'Failed to load product details', 'error');
-      } finally {
-        setIsLoading(false);
+        const data = await categoryService.getCategories();
+        setCategories(data || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
       }
     };
-
-    void fetchProduct();
-  }, [id, showToast]);
+    void fetchCategories();
+  }, []);
 
   // --- Copy ID Helper ---
   const handleCopyId = (text: string, type: 'id' | 'sku') => {
@@ -63,6 +91,57 @@ export default function AdminProductDetailPage() {
     setCopiedId(text);
     showToast(`Copied ${type === 'id' ? 'Product UUID' : 'Variant SKU'} to clipboard!`, 'success');
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleOpenCreateVariant = () => {
+    setEditingVariant(null);
+    setIsVariantModalOpen(true);
+  };
+
+  const handleEditVariant = (variant: ProductVariant) => {
+    setEditingVariant(variant);
+    setIsVariantModalOpen(true);
+  };
+
+  const handleVariantSaved = async () => {
+    setIsVariantModalOpen(false);
+    setEditingVariant(null);
+    if (typeof id === 'string') {
+      await fetchProduct(id);
+    }
+  };
+
+  const handleEditProduct = () => {
+    if (!product) return;
+    setEditingProduct(product);
+    setIsProductModalOpen(true);
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!product) return;
+    if (!window.confirm(`Delete product ${product.name}?`)) return;
+    try {
+      await productService.deleteProduct(product.id);
+      showToast('Product deleted successfully', 'success');
+      router.push(ROUTES.adminProducts);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete product';
+      showToast(message, 'error');
+    }
+  };
+
+  const handleDeleteVariant = async (variant: ProductVariant) => {
+    if (!window.confirm(`Delete variant ${variant.sku}?`)) return;
+    try {
+      await productVariantService.deleteVariant(variant.id);
+      showToast('Variant deleted successfully', 'success');
+      if (typeof id === 'string') {
+        await fetchProduct(id);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete variant';
+      showToast(message, 'error');
+    }
   };
 
   // --- Role Security Authorization Guard ---
@@ -121,7 +200,7 @@ export default function AdminProductDetailPage() {
       <Sidebar />
 
       {/* Main Workspace Content */}
-      <main className="flex-1 ml-64 p-10 max-w-[1440px] mx-auto w-full">
+      <main className="flex-1 ml-64 p-10 mx-auto w-full">
         {/* Navigation & Header row */}
         <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-col gap-3">
@@ -135,7 +214,7 @@ export default function AdminProductDetailPage() {
 
             <div className="flex flex-wrap items-center gap-3 mt-1">
               <h2 className="text-4xl font-display font-black text-on-surface tracking-tighter">{product.name}</h2>
-              <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all leading-none whitespace-nowrap flex-nowrap ${
                 product.isDeleted 
                   ? 'bg-red-50 text-red-600 border-red-100' 
                   : 'bg-brand-primary text-brand-on-primary border-brand-primary'
@@ -165,13 +244,22 @@ export default function AdminProductDetailPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => showToast(`Edit form for product: ${product.name}`, 'info')}
-            className="flex items-center justify-center gap-2 bg-white border border-surface-container-highest px-5 py-3 rounded-xl font-bold text-sm text-on-surface shadow-sm hover:bg-surface-container active:scale-95 transition-all w-fit cursor-pointer"
-          >
-            <Edit className="w-4 h-4 text-brand-primary" />
-            <span>Edit Product Details</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleEditProduct}
+              className="flex items-center justify-center gap-2 bg-white border border-surface-container-highest px-5 py-3 rounded-xl font-bold text-sm text-on-surface shadow-sm hover:bg-surface-container active:scale-95 transition-all w-fit cursor-pointer"
+            >
+              <Edit className="w-4 h-4 text-brand-primary" />
+              <span>Edit Product Details</span>
+            </button>
+            <button
+              onClick={handleDeleteProduct}
+              className="flex items-center justify-center gap-2 bg-red-50 border border-red-100 px-5 py-3 rounded-xl font-bold text-sm text-red-600 shadow-sm hover:bg-red-100 active:scale-95 transition-all w-fit cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Product</span>
+            </button>
+          </div>
         </header>
 
         {/* Dynamic Metric Cards */}
@@ -179,7 +267,7 @@ export default function AdminProductDetailPage() {
           <div className="bg-white border border-surface-container-highest p-6 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">Base Price</span>
-              <p className="text-3xl font-display font-black text-on-surface font-mono mt-1">${Number(product.basePrice).toFixed(2)}</p>
+              <p className="text-3xl font-display font-black text-on-surface font-mono mt-1">{formatCurrency(Number(product.basePrice))}</p>
             </div>
             <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-xl">
               <Tag className="w-5 h-5" />
@@ -190,7 +278,7 @@ export default function AdminProductDetailPage() {
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">Total Inventory</span>
               <p className={`text-3xl font-display font-black font-mono mt-1 ${totalStock === 0 ? 'text-red-500' : 'text-on-surface'}`}>
-                {totalStock} <span className="text-xs text-on-surface-variant font-sans font-medium">units</span>
+                {totalStock}
               </p>
             </div>
             <div className={`p-3 rounded-xl ${totalStock === 0 ? 'bg-red-50 text-red-600' : 'bg-brand-primary/10 text-brand-primary'}`}>
@@ -211,7 +299,7 @@ export default function AdminProductDetailPage() {
           <div className="bg-white border border-surface-container-highest p-6 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">Avg Variant Price</span>
-              <p className="text-3xl font-display font-black text-on-surface font-mono mt-1">${avgVariantPrice.toFixed(2)}</p>
+              <p className="text-3xl font-display font-black text-on-surface font-mono mt-1">{formatCurrency(Number(avgVariantPrice))}</p>
             </div>
             <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-xl">
               <TrendingUp className="w-5 h-5" />
@@ -298,11 +386,11 @@ export default function AdminProductDetailPage() {
                 </div>
 
                 <button
-                  onClick={() => showToast('Create variant trigger', 'info')}
+                  onClick={handleOpenCreateVariant}
                   className="flex items-center justify-center gap-1 bg-brand-primary text-brand-on-primary px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm hover:opacity-90 active:scale-95 transition-all w-fit cursor-pointer"
                 >
                   <Activity className="w-3.5 h-3.5" />
-                  <span>Manage Variants</span>
+                  <span>Create Variants</span>
                 </button>
               </div>
 
@@ -322,6 +410,7 @@ export default function AdminProductDetailPage() {
                         <th className="py-4 px-6 text-[10px] font-black uppercase tracking-wider">Size</th>
                         <th className="py-4 px-6 text-[10px] font-black uppercase tracking-wider">Price</th>
                         <th className="py-4 px-6 text-[10px] font-black uppercase tracking-wider">Stock</th>
+                        <th className="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-container-high">
@@ -355,7 +444,7 @@ export default function AdminProductDetailPage() {
                             {v.size || 'OS'}
                           </td>
                           <td className="py-4 px-6 font-mono text-xs font-bold text-on-surface">
-                            ${Number(v.price).toFixed(2)}
+                            {formatCurrency(Number(v.price))}
                           </td>
                           <td className="py-4 px-6">
                             {v.stock === 0 ? (
@@ -365,15 +454,33 @@ export default function AdminProductDetailPage() {
                               </span>
                             ) : v.stock < 5 ? (
                               <div className="flex flex-col gap-0.5">
-                                <span className="text-xs font-bold text-amber-600 font-mono">{v.stock} units</span>
+                                <span className="text-xs font-bold text-amber-600 font-mono">{v.stock}</span>
                                 <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 flex items-center gap-0.5">
                                   <AlertTriangle className="w-2.5 h-2.5 shrink-0" />
                                   <span>Low Inventory</span>
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs font-bold text-emerald-600 font-mono">{v.stock} units</span>
+                              <span className="text-xs font-bold text-emerald-600 font-mono">{v.stock}</span>
                             )}
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleEditVariant(v)}
+                                className="p-2 text-on-surface-variant hover:text-brand-primary hover:bg-surface-container rounded-lg transition-all active:scale-90"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteVariant(v)}
+                                className="p-2 text-on-surface-variant hover:text-red-600 hover:bg-red-50 rounded-lg transition-all active:scale-90"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -385,6 +492,32 @@ export default function AdminProductDetailPage() {
           </div>
         </div>
       </main>
+
+      <ProductVariantModal
+        open={isVariantModalOpen}
+        productId={typeof id === 'string' ? id : ''}
+        initialVariant={editingVariant}
+        onClose={() => {
+          setIsVariantModalOpen(false);
+          setEditingVariant(null);
+        }}
+        onSuccess={() => void handleVariantSaved()}
+      />
+
+      <ProductFormModal
+        open={isProductModalOpen}
+        categories={categories}
+        initialProduct={editingProduct}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onSuccess={(updated) => {
+          setProduct(updated);
+          setIsProductModalOpen(false);
+          setEditingProduct(null);
+        }}
+      />
 
       <style dangerouslySetInnerHTML={{
         __html: `

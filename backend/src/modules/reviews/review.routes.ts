@@ -16,9 +16,11 @@ import {
     reviewIdParamSchema,
     updateReviewSchema,
 } from './review.schema.js';
+import { cacheMiddleware, clearCache } from '@/shared/middlewares/cache.middleware.js';
 
 export const reviewRoutes = Router();
 export const adminReviewRoutes = Router();
+const cacheKeys = ['dashboardTopProducts', 'productReviewsByProductId'];
 
 const reviewController = new ReviewController();
 
@@ -27,6 +29,7 @@ reviewRoutes.get(
     auditLog('review.getProductReviews'),
     validateParams(productIdParamSchema),
     validateQuery(getProductReviewsQuerySchema),
+    cacheMiddleware('productReviewsByProductId', 60),
     asyncHandler(reviewController.getProductReviews.bind(reviewController)),
 );
 
@@ -37,6 +40,7 @@ reviewRoutes.post(
     requireRole('USER'),
     validateParams(productIdParamSchema),
     validateBody(createReviewSchema),
+    clearCache(cacheKeys),
     asyncHandler(reviewController.createReview.bind(reviewController)),
 );
 
@@ -47,6 +51,7 @@ reviewRoutes.patch(
     requireRole('USER'),
     validateParams(reviewIdParamSchema),
     validateBody(updateReviewSchema),
+    clearCache(cacheKeys),
     asyncHandler(reviewController.updateReview.bind(reviewController)),
 );
 
@@ -55,6 +60,7 @@ reviewRoutes.delete(
     auditLog('review.deleteReview'),
     authenticate,
     validateParams(reviewIdParamSchema),
+    clearCache(cacheKeys),
     asyncHandler(reviewController.deleteReview.bind(reviewController)),
 );
 

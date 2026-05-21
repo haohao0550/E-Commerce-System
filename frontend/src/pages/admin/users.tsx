@@ -161,7 +161,7 @@ export default function AdminUsersPage() {
       <Sidebar />
 
       {/* Main Content Workspace */}
-      <main className="flex-1 ml-64 p-10 max-w-[1440px] mx-auto w-full">
+      <main className="flex-1 ml-64 p-10 mx-auto w-full">
         {/* Dynamic Responsive User Header */}
         <UserHeader onExportClick={handleExport} />
 

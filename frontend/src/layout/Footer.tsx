@@ -5,7 +5,7 @@ import { ROUTES } from '@/routes';
 export const Footer = () => {
   return (
     <footer className="bg-white border-t border-outline-variant/20 mt-20">
-      <div className="max-w-[1440px] mx-auto px-10 py-20">
+      <div className="mx-auto px-10 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
           <div className="space-y-6">
             <Link href={ROUTES.home} className="text-headline-md font-bold text-on-surface hover:opacity-85 transition-opacity block">

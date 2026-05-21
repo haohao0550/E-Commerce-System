@@ -13,7 +13,7 @@ const couponController = new CouponController();
 router.get(
     '/',
     validateQuery(getCouponsQuerySchema),
-    cacheMiddleware('coupon:', 60),
+    cacheMiddleware('coupon', 60),
     asyncHandler(couponController.getCoupons),
 );
 

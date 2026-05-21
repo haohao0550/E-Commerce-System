@@ -52,6 +52,12 @@ export interface OrderItem {
 export interface Order {
   id: string;
   userId: string;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string;
+    phone?: string | null;
+  };
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURNED';
   paymentMethod: 'COD' | 'VNPAY' | 'MOMO';
   paymentStatus: 'UNPAID' | 'PAID' | 'FAILED' | 'REFUNDED';

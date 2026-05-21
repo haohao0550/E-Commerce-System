@@ -14,16 +14,17 @@ import {
 } from '@/shared/middlewares/validate.middleware.js';
 import { authenticate, requireRole } from '@/shared/middlewares/authenticate.middlware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
-import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js';
+import { cacheMiddleware, clearCache } from '@/shared/middlewares/cache.middleware.js';
 
 const router = Router();
 const productsController = new ProductsController();
+const cacheKeys = ['dashboardTopProducts', 'products', 'productById', 'productBySlug'];
 
 router.get(
     '/',
     auditLog('product.getAllProducts'),
     validateQuery(getProductsQuerySchema),
-    cacheMiddleware('products:', 60),
+    cacheMiddleware('products', 60),
     productsController.getAll,
 );
 
@@ -31,7 +32,7 @@ router.get(
     '/:id',
     auditLog('product.getProductById'),
     validateParams(productIdSchema),
-    cacheMiddleware('productById:', 60),
+    cacheMiddleware('productById', 60),
     productsController.getProductById,
 );
 
@@ -41,6 +42,7 @@ router.post(
     requireRole('ADMIN'),
     auditLog('product.createProduct'),
     validateBody(createProductSchema),
+    clearCache(cacheKeys),
     productsController.create,
 );
 
@@ -51,6 +53,7 @@ router.patch(
     auditLog('product.updateProduct'),
     validateParams(productIdSchema),
     validateBody(updateProductSchema),
+    clearCache(cacheKeys),
     productsController.update,
 );
 
@@ -60,6 +63,7 @@ router.delete(
     requireRole('ADMIN'),
     auditLog('product.deleteProduct'),
     validateParams(productIdSchema),
+    clearCache(cacheKeys),
     productsController.delete,
 );
 
@@ -69,6 +73,7 @@ router.patch(
     requireRole('ADMIN'),
     auditLog('product.restoreProduct'),
     validateParams(productIdSchema),
+    clearCache(cacheKeys),
     productsController.restore,
 );
 
@@ -76,7 +81,7 @@ router.get(
     '/:slug',
     auditLog('product.getProductBySlug'),
     validateParams(productSlugSchema),
-    cacheMiddleware('productBySlug:', 60),
+    cacheMiddleware('productBySlug', 60),
     productsController.getBySlug,
 );
 

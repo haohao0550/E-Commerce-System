@@ -9,6 +9,7 @@ import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
 import { asyncHandler } from '@/shared/errors/async-handler.error.js';
 import * as dashboardSchema from './dashboard.schema.js';
 import { DashboardController } from './dashboard.controller.js';
+import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js';
 
 const router = Router();
 const adminRouter = Router();
@@ -18,6 +19,7 @@ router.get(
     '/dashboard/top-products',
     auditLog('View Top Products Dashboard'),
     validateQuery(dashboardSchema.TopProductsQuerySchema),
+    cacheMiddleware('dashboardTopProducts', 60),
     asyncHandler(dashboardController.getTopProducts.bind(dashboardController)),
 );
 
