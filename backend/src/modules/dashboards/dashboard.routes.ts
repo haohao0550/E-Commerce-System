@@ -24,7 +24,7 @@ router.get(
 router.use('/admin/dashboard', authenticate, requireRole('ADMIN'), adminRouter);
 
 adminRouter.get(
-    '/revenue',    
+    '/revenue',
     auditLog('View Revenue Dashboard'),
     validateQuery(dashboardSchema.RevenueQuerySchema),
     asyncHandler(dashboardController.getRevenue.bind(dashboardController)),

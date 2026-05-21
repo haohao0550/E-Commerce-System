@@ -8,7 +8,10 @@ export interface IDashboardRepo {
         }>
     >;
 
-    getOrdersWithinRange(startDate?: Date, endDate?: Date): Promise<
+    getOrdersWithinRange(
+        startDate?: Date,
+        endDate?: Date,
+    ): Promise<
         Array<{
             createdAt: Date;
             finalPrice: Prisma.Decimal | number | null;

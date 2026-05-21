@@ -156,7 +156,6 @@ describe('POST /api/v1/auth/refresh', () => {
     });
 
     it('200 + returns new token when valid', async () => {
-
         const res = await request(app).post('/api/v1/auth/refresh').set('Cookie', cookies);
         expect(res.status).toBe(200);
         expect(res.body.data.accessToken).toBeDefined();
@@ -168,7 +167,10 @@ describe('POST /api/v1/auth/refresh', () => {
     });
 
     it('401 if refresh token is invalid', async () => {
-        const res = await request(app).post('/api/v1/auth/refresh').send().set('Cookie', ['refreshToken=invalidtoken']);
+        const res = await request(app)
+            .post('/api/v1/auth/refresh')
+            .send()
+            .set('Cookie', ['refreshToken=invalidtoken']);
         expect(res.status).toBe(401);
     });
 
@@ -177,9 +179,7 @@ describe('POST /api/v1/auth/refresh', () => {
             throw new jwt.TokenExpiredError('jwt expired', new Date());
         });
 
-        const res = await request(app)
-            .post('/api/v1/auth/refresh')
-            .set('Cookie', cookies);
+        const res = await request(app).post('/api/v1/auth/refresh').set('Cookie', cookies);
 
         expect(res.status).toBe(401);
     });
@@ -202,7 +202,8 @@ describe('POST /api/v1/auth/logout', () => {
     });
 
     it('200 + clears refresh token cookie', async () => {
-        const res = await request(app).post('/api/v1/auth/logout')
+        const res = await request(app)
+            .post('/api/v1/auth/logout')
             .set('Cookie', cookies)
             .set('Authorization', `Bearer ${access}`);
         expect(res.status).toBe(200);
@@ -214,7 +215,9 @@ describe('POST /api/v1/auth/logout', () => {
     });
 
     it('401 if refresh token is valid', async () => {
-        const res = await request(app).post('/api/v1/auth/logout').set('Cookie', ["refreshToken=invalidtoken"]);
+        const res = await request(app)
+            .post('/api/v1/auth/logout')
+            .set('Cookie', ['refreshToken=invalidtoken']);
         expect(res.status).toBe(401);
     });
 });

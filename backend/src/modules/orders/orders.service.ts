@@ -190,8 +190,8 @@ export class OrdersService {
         if (order.paymentMethod === 'COD' && status === 'DELIVERED') {
             return this.ordersRepo.update(order.id, {
                 status: 'DELIVERED',
-                paymentStatus: 'PAID'
-            })
+                paymentStatus: 'PAID',
+            });
         }
 
         return this.ordersRepo.updateStatus(id, status);
@@ -204,7 +204,7 @@ export class OrdersService {
         }
 
         if (order.paymentMethod === 'MOMO') {
-            throw new BadRequestError('MoMo payment status must be updated by payment callback')
+            throw new BadRequestError('MoMo payment status must be updated by payment callback');
         }
 
         return this.ordersRepo.updatePaymentStatus(id, paymentStatus);
