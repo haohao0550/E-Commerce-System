@@ -17,6 +17,7 @@ import { productService } from '@/features/products/services/product.service';
 import { categoryService } from '@/features/categories/services/category.service';
 import type { Product } from '@/features/products/types/product';
 import type { Category } from '@/features/categories/types/category';
+import { formatMoney } from '@/utils/format';
 
 const SIZES = ['38', '39', '40', '41', '42', '43', '44', '45', '46'];
 
@@ -85,7 +86,7 @@ export default function AllProductsPage() {
 
   const formatPrice = (price: number) => {
     if (isVnd) {
-      return `${price.toLocaleString('vi-VN')} đ`;
+      return `${price.toLocaleString('vi-VN')} $`;
     }
     return `$${price.toFixed(2)}`;
   };
@@ -178,14 +179,14 @@ export default function AllProductsPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-on-surface-variant font-display font-medium text-sm"
+              className="text-on-surface-variant font-display font-medium text-base"
             >
               Curating {filteredAndSortedProducts.length} high-performance sneaker models
             </motion.p>
           </div>
 
           {/* Stand-alone Search Input inside page */}
-          <div className="flex items-center bg-surface-low border border-outline-variant/30 rounded-full px-5 py-3 w-full md:w-80 shadow-sm focus-within:border-black/35 transition-all">
+          <div className="flex items-center bg-surface-low border border-outline-variant/30 rounded-full px-5 py-3 w-full md:w-120 shadow-sm focus-within:border-black/35 transition-all">
             <Search className="w-4 h-4 text-on-surface-variant mr-3 shrink-0" />
             <input 
               type="text" 
@@ -202,10 +203,10 @@ export default function AllProductsPage() {
           {/* Filters Sidebar */}
           <aside className="w-full lg:w-64 space-y-10 shrink-0">
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
-              <h2 className="font-display text-lg font-black uppercase tracking-tight text-black">Filters</h2>
+              <h2 className="font-display text-xl font-black uppercase tracking-tight text-black">Filters</h2>
               <button 
                 onClick={clearAll}
-                className="label-micro hover:text-black transition-colors underline underline-offset-4 cursor-pointer"
+                className="text-base hover:text-black transition-colors underline underline-offset-4 cursor-pointer"
               >
                 Clear All
               </button>
@@ -213,7 +214,7 @@ export default function AllProductsPage() {
 
             {/* Categories */}
             <div className="space-y-4">
-              <h3 className="label-micro text-black">Category</h3>
+              <h3 className="text-base text-gray-600 font-semibold">Category</h3>
               <div className="flex flex-col gap-3">
                 {categories.map((cat) => (
                   <label key={cat.id} className="flex items-center gap-3 cursor-pointer group select-none">
@@ -232,7 +233,7 @@ export default function AllProductsPage() {
                         <Zap className="w-3 h-3 fill-current" />
                       </motion.div>
                     </div>
-                    <span className="text-sm font-medium text-on-surface-variant group-hover:text-black transition-colors capitalize">
+                    <span className="text-sm font-medium text-gray-600 group-hover:text-black transition-colors capitalize">
                       {cat.name}
                     </span>
                   </label>
@@ -245,7 +246,7 @@ export default function AllProductsPage() {
 
             {/* Sizes */}
             <div className="space-y-4">
-              <h3 className="label-micro text-black">Size (US Men)</h3>
+              <h3 className="text-base text-gray-600 font-semibold">Size (US Men)</h3>
               <div className="grid grid-cols-3 gap-2">
                 {SIZES.map((size) => {
                   const isActive = selectedSize === size;
@@ -268,7 +269,7 @@ export default function AllProductsPage() {
 
             {/* Price Range */}
             <div className="space-y-6">
-              <h3 className="label-micro text-black">Price Range</h3>
+              <h3 className="text-base text-gray-600 font-semibold">Price Range</h3>
               <div className="space-y-6">
                 <input 
                   type="range" 
@@ -281,15 +282,15 @@ export default function AllProductsPage() {
                 />
                 <div className="flex gap-4">
                   <div className="flex-1 space-y-1">
-                    <span className="label-micro text-[8px]">Min</span>
+                    <span className="text-base">Min</span>
                     <div className="border-b border-outline-variant/30 py-1 font-display font-bold text-sm text-black">
-                      {formatPrice(0)}
+                      {formatMoney(1000000)}
                     </div>
                   </div>
                   <div className="flex-1 space-y-1">
-                    <span className="label-micro text-[8px]">Max</span>
+                    <span className="text-base">Max</span>
                     <div className="border-b border-outline-variant/30 py-1 font-display font-bold text-sm text-black">
-                      {formatPrice(priceRange)}
+                      {formatMoney(priceRange)}
                     </div>
                   </div>
                 </div>
@@ -307,7 +308,7 @@ export default function AllProductsPage() {
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                   className="flex items-center gap-2 group cursor-pointer py-1"
                 >
-                  <span className="label-micro text-black font-extrabold">Sort By: {sortBy}</span>
+                  <span className="text-base font-semibold text-gray-700">Sort By: {sortBy}</span>
                   <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5 text-black" />
                 </button>
                 
@@ -383,8 +384,8 @@ export default function AllProductsPage() {
                             <h3 className="font-display text-lg font-black tracking-tight text-black group-hover:text-primary transition-colors leading-tight uppercase truncate">
                               {product.name}
                             </h3>
-                            <span className="price-display text-black font-mono shrink-0">
-                              {formatPrice(Number(product.basePrice))}
+                            <span className="price-display text-black shrink-0">
+                              {formatMoney(Number(product.basePrice))}
                             </span>
                           </div>
                           <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">

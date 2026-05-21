@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ROUTES } from '@/routes';
 import { productService } from '@/features/products/services/product.service';
 import type { Product } from '@/features/products/types/product';
+import { formatMoney } from '@/utils/format';
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -54,16 +55,16 @@ export default function HomePage() {
             transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
             className="relative z-10 text-center px-6 max-w-4xl"
           >
-            <span className="inline-block px-4 py-1 border border-black/20 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-6 backdrop-blur-sm bg-white/10 text-black">
+            <span className="inline-block px-4 py-1 border border-black/20 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-6 backdrop-blur-sm bg-white/10 text-gray-200">
               Latest Drop
             </span>
-            <h1 className="text-5xl md:text-8xl font-display font-black leading-[0.95] uppercase tracking-tighter text-black mb-8">
+            <h1 className="text-5xl md:text-8xl font-display font-black leading-[0.95] uppercase tracking-tighter text-gray-200 mb-8">
               The Next Step <br /> In Speed
             </h1>
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-black text-white px-10 py-4 font-bold uppercase tracking-widest text-xs rounded hover:bg-black/90 transition-colors"
+              className="bg-gray-200 text-black px-10 py-4 font-bold uppercase tracking-widest text-xs rounded hover:bg-gray-300 transition-colors"
             >
               Shop New Drops
             </motion.button>
@@ -73,8 +74,8 @@ export default function HomePage() {
         {/* New Arrivals */}
         <section id="new-arrivals" className="max-w-7xl mx-auto px-6 md:px-10 py-24">
           <div className="flex items-end justify-between mb-12 border-b border-surface-highest pb-8">
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-black tracking-tight uppercase">New Arrivals</h2>
-            <Link href={ROUTES.products} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-black kinetic-transition">
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-black tracking-tight uppercase">Top Products</h2>
+            <Link href={ROUTES.products} className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-on-surface-variant hover:text-black kinetic-transition">
               View All <ArrowRight size={16} strokeWidth={2.5} />
             </Link>
           </div>
@@ -131,7 +132,7 @@ export default function HomePage() {
                         />
                       </div>
                       <h3 className="text-xl font-display font-bold text-black mb-1">{product.name}</h3>
-                      <p className="text-on-surface-variant font-medium">${Number(product.basePrice).toFixed(2)}</p>
+                      <p className="text-on-surface-variant font-medium text-xl">{formatMoney(product.basePrice)}</p>
                     </motion.div>
                   </Link>
                 );
@@ -141,7 +142,7 @@ export default function HomePage() {
         </section>
 
         {/* Trending Collections */}
-        <section id="trending" className="max-w-7xl mx-auto px-6 md:px-10 py-24 bg-surface-lowest">
+        <section id="trending" className="max-w-7xl mx-auto px-6 md:px-10 py-12 bg-surface-lowest">
           <h2 className="text-3xl md:text-5xl font-display font-bold text-black tracking-tight uppercase mb-12">Trending Collections</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[700px]">

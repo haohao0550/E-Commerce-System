@@ -14,8 +14,8 @@ export const ProfileForm = () => {
   // --- Auth Context Hooks & State ---
   const { user, refreshProfile } = useAuth();
   const { error, isSubmitting, message, run } = useAsyncAction();
-  
-  // Local state to hold current avatar URL to allow real-time UI preview changes
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [previewAvatarUrl, setPreviewAvatarUrl] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   
   // Ref for the hidden file upload input element
@@ -27,6 +27,8 @@ export const ProfileForm = () => {
       setAvatarUrl(user.avatar);
     }
   }, [user]);
+
+  console.log('Current user profile data:', { name: user?.name, email: user?.email, phone: user?.phone, avatar: user?.avatar });
 
   // --- Event Handlers & API Actions ---
 
@@ -40,22 +42,25 @@ export const ProfileForm = () => {
   /**
    * Handles avatar selection, verifies file limits, and uploads to Cloudinary backend.
    */
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (max 1MB)
     const maxSize = 1024 * 1024;
+
     if (file.size > maxSize) {
       alert('The file size is too large. Please select an image file smaller than 1MB.');
       return;
     }
 
-    // Call upload service inside async runner wrapper to handle feedback state
-    void run(async () => {
-      const uploadedUrl = await userService.uploadAvatar(file);
-      setAvatarUrl(uploadedUrl);
-    }, 'Avatar uploaded successfully! Click "Save Changes" to save it permanently.');
+    if (previewAvatarUrl) {
+      URL.revokeObjectURL(previewAvatarUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setSelectedAvatarFile(file);
+    setPreviewAvatarUrl(previewUrl);
   };
 
   /**
@@ -69,17 +74,39 @@ export const ProfileForm = () => {
       const name = String(formData.get('name') || '').trim();
       const email = String(formData.get('email') || '').trim();
       const phone = String(formData.get('phone') || '').trim();
-      const avatar = String(formData.get('avatar') || '').trim();
+
+      let finalAvatarUrl = avatarUrl;
+
+      if (selectedAvatarFile) {
+        finalAvatarUrl = await userService.uploadAvatar(selectedAvatarFile);
+      }
 
       await userService.updateProfile({
         ...(name ? { name } : {}),
         email: email || undefined,
         phone: phone || null,
-        avatar: avatar || null,
+        avatar: finalAvatarUrl || null,
       });
+
+      setAvatarUrl(finalAvatarUrl);
+      setSelectedAvatarFile(null);
+
+      if (previewAvatarUrl) {
+        URL.revokeObjectURL(previewAvatarUrl);
+        setPreviewAvatarUrl('');
+      }
+
       await refreshProfile();
     }, 'Profile updated');
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewAvatarUrl) {
+        URL.revokeObjectURL(previewAvatarUrl);
+      }
+    };
+  }, [previewAvatarUrl]);
 
   // Fallback placeholder image for users without a custom avatar
   const defaultAvatar = 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=2574&auto=format&fit=crop';
@@ -100,7 +127,7 @@ export const ProfileForm = () => {
         <div className="relative">
           <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary p-1 bg-white">
             <img 
-              src={avatarUrl || defaultAvatar} 
+              src={previewAvatarUrl || avatarUrl || defaultAvatar} 
               alt="Profile" 
               className="w-full h-full object-cover rounded-full"
             />
@@ -136,6 +163,7 @@ export const ProfileForm = () => {
           <label className="text-label-lg text-primary">Email Address</label>
           <input 
             type="email" 
+            disabled
             name="email"
             defaultValue={user?.email || ''}
             required
@@ -157,6 +185,7 @@ export const ProfileForm = () => {
           <label className="text-label-lg text-primary">Avatar Image URL</label>
           <input 
             type="url" 
+            disabled
             name="avatar"
             value={avatarUrl}
             onChange={(e) => setAvatarUrl(e.target.value)}

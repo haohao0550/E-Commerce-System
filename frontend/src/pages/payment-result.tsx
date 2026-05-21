@@ -47,7 +47,7 @@ export default function PaymentResultPage() {
     >
       {/* Ambient orbs */}
       <div
-        className="pointer-events-none absolute -top-24 -right-16 h-80 w-80 rounded-full blur-[80px]"
+        className="pointer-events-none absolute -top-24 -right-16 h-80 w-100 rounded-full blur-[80px]"
         style={{
           background: success
             ? 'radial-gradient(circle, #1D9E75 0%, transparent 70%)'
@@ -106,16 +106,15 @@ export default function PaymentResultPage() {
 
             {/* Heading */}
             <h1
-              className="text-center text-[22px] font-bold tracking-tight text-slate-900"
+              className="text-center text-[22px] font-bold tracking-tight text-emerald-700"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
               {result.statusLabel}
             </h1>
-            <p className="mt-2 mb-6 text-center text-[13px] leading-relaxed text-slate-500">
-              {result.message ||
-                (success
-                  ? 'Giao dịch của bạn đã được xử lý thành công.'
-                  : 'Giao dịch không thể hoàn tất. Vui lòng thử lại.')}
+            <p className="mt-2 mb-6 text-center text-[13px] leading-relaxed text-gray-600">
+              {(success
+                ? 'Giao dịch của bạn đã được xử lý thành công.'
+                : 'Giao dịch không thể hoàn tất. Vui lòng thử lại.')}
             </p>
 
             {/* Divider */}
@@ -128,6 +127,7 @@ export default function PaymentResultPage() {
                   icon: <Receipt className="h-[15px] w-[15px]" />,
                   label: 'Mã đơn hàng',
                   value: paymentOrderId ?? '—',
+                  isLong: true,
                 },
                 {
                   icon: <Wallet className="h-[15px] w-[15px]" />,
@@ -139,10 +139,10 @@ export default function PaymentResultPage() {
                   label: 'Mã phản hồi',
                   value: (
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                         success
-                          ? 'bg-emerald-50 text-emerald-800'
-                          : 'bg-orange-50 text-orange-800'
+                          ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
+                          : 'bg-rose-50 text-rose-700 ring-1 ring-rose-100'
                       }`}
                     >
                       {resultCode ?? '—'}
@@ -154,38 +154,47 @@ export default function PaymentResultPage() {
                   label: 'Thời gian',
                   value: timestamp,
                 },
-              ].map(({ icon, label, value }) => (
-                <div key={label} className="flex items-center justify-between py-[11px]">
-                  <span className="flex items-center gap-2 text-[13px] text-slate-400">
+              ].map(({ icon, label, value, isLong }) => (
+                <div key={label} className="flex items-start justify-between gap-4 py-[12px]">
+                  <span className="flex shrink-0 items-center gap-2 text-[13px] text-slate-400 mt-1">
                     {icon}
                     {label}
                   </span>
-                  <span className="text-[13px] font-medium text-slate-800">{value}</span>
+
+                  <span
+                    className={`min-w-0 text-right text-[13px] font-semibold text-slate-800 ${
+                      isLong
+                        ? 'max-w-[220px] break-all rounded-lg bg-slate-50 px-2 py-1 font-mono text-[11px] leading-relaxed text-slate-600'
+                        : ''
+                    }`}
+                  >
+                    {value}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="grid grid-cols-2 gap-2.5 px-8 pb-8 pt-6">
+          <div className="grid grid-cols-2 gap-3 px-8 pb-8 pt-6">
             <Link
               href={ROUTES.cart}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-[11px] text-[13px] font-medium text-slate-700 transition hover:bg-slate-50 active:scale-95"
+              className="group flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white hover:text-slate-950 hover:shadow-md active:scale-95"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <ArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-0.5" />
               Giỏ hàng
             </Link>
+
             <Link
               href={ROUTES.home}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-4 py-[11px] text-[13px] font-medium text-white transition active:scale-95 ${
+              className={`group flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold text-white shadow-md transition hover:shadow-lg active:scale-95 ${
                 success
-                  ? 'bg-emerald-900 hover:bg-emerald-800'
-                  : 'bg-orange-900 hover:bg-orange-800'
+                  ? 'bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-800 hover:to-teal-700'
+                  : 'bg-gradient-to-r from-slate-900 to-slate-700 hover:from-black hover:to-slate-800'
               }`}
-              style={{ color: success ? '#9FE1CB' : '#F5C4B3' }}
             >
               Trang chủ
-              <Home className="h-3.5 w-3.5" />
+              <Home className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>

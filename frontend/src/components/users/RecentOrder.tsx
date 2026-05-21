@@ -4,6 +4,7 @@ import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
 import { orderService, Order, OrderItem } from '@/features/orders/services/order.service';
 import { ReviewFormModal } from '@/features/reviews/components/ReviewFormModal';
+import { formatMoney } from '@/utils/format';
 
 export const RecentOrder = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -146,21 +147,21 @@ export const RecentOrder = () => {
         return (
           <section
             key={order.id}
-            className="bg-white p-6 md:p-8 rounded-xl border border-outline-variant/20 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
+            className="bg-white p-6 md:p-8 rounded-xl border border-outline-variant/20 shadow-sm flex flex-col justify-between hover:shadow-lg transition-shadow relative overflow-hidden"
           >
             {/* Top Info Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/20 pb-4 mb-6">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider font-mono">
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-mono">
                   Order ID: <span className="text-black select-all font-black">{order.id}</span>
                 </span>
                 <p className="text-xs text-on-surface-variant font-medium">Placed on {orderDate}</p>
               </div>
               <div className="flex flex-wrap gap-2.5 items-center">
-                <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${getStatusStyle(order.status)}`}>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${getStatusStyle(order.status)}`}>
                   {order.status}
                 </span>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider ${getPaymentStatusStyle(order.paymentStatus)}`}>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wider ${getPaymentStatusStyle(order.paymentStatus)}`}>
                   {order.paymentStatus}
                 </span>
               </div>
@@ -186,7 +187,7 @@ export const RecentOrder = () => {
                 return (
                   <div key={item.id} className="flex gap-4 items-center justify-between border-b border-outline-variant/10 pb-4 last:border-0 last:pb-0">
                     <div className="flex gap-4 items-center flex-1 min-w-0">
-                      <div className="w-16 h-16 bg-surface-low rounded-lg overflow-hidden flex-shrink-0 border border-outline-variant/10">
+                      <div className="w-16 h-16 bg-surface-low rounded-lg overflow-hidden shrink-0 border border-outline-variant/10">
                         <img
                           src={imgUrl}
                           alt={item.productName}
@@ -196,10 +197,10 @@ export const RecentOrder = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-black uppercase truncate">{item.productName}</p>
-                        <p className="text-xs text-on-surface-variant font-medium mt-0.5 capitalize">{item.variantInfo || 'N/A'}</p>
+                        <p className="text-sm text-on-surface-variant font-medium mt-0.5 capitalize">{item.variantInfo || 'N/A'}</p>
                         <div className="flex justify-between items-center mt-1 text-xs">
                           <span className="text-on-surface-variant font-medium">Qty: {item.quantity}</span>
-                          <span className="font-mono font-bold text-black">${Number(item.price).toFixed(2)}</span>
+                          <span className="font-heading text-sm font-bold text-black">{formatMoney(Number(item.price))}</span>
                         </div>
                       </div>
                     </div>
@@ -209,7 +210,7 @@ export const RecentOrder = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenReviewModal(item, order.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 border border-primary text-primary hover:bg-primary/10 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 border border-primary text-primary hover:bg-primary/10 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer shrink-0"
                       >
                         <Star className="w-4 h-4" />
                         <span>Review</span>
@@ -230,7 +231,7 @@ export const RecentOrder = () => {
                 </div>
                 <div className="flex gap-3 text-sm pt-0.5">
                   <span>Total Amount:</span>
-                  <span className="text-black font-mono font-black">${Number(order.finalPrice).toFixed(2)}</span>
+                  <span className="font-heading text-black font-mono font-black">{formatMoney(Number(order.finalPrice))}</span>
                 </div>
               </div>
 

@@ -29,6 +29,7 @@ import { cartService } from '@/services/cart.service';
 import { ReviewSection } from '@/features/reviews/components/ReviewSection';
 import type { Product, ProductVariant } from '@/features/products/types/product';
 import { ROUTES } from '@/routes';
+import { formatMoney } from '@/utils/format';
 
 export default function UserProductDetailPage() {
   const router = useRouter();
@@ -233,7 +234,7 @@ export default function UserProductDetailPage() {
     setIsSubmittingOrder(true);
     try {
       const orderPayload = {
-        paymentMethod,
+        paymentMethod: paymentMethod.toUpperCase() as 'COD' | 'VNPAY' | 'MOMO',
         shippingAddress: {
           fullName: fullName.trim(),
           phone: phone.trim(),
@@ -251,6 +252,27 @@ export default function UserProductDetailPage() {
       };
 
       const newOrder = await orderService.createOrder(orderPayload);
+
+      if (paymentMethod === 'MOMO') {
+        // Use central API store to call MoMo payment creation
+        const apiStore = (await import('@/store/apiStore')).useApiStore
+        const { callApi } = apiStore.getState()
+
+        const momoResponse = await callApi(`/payment/momo/create/${newOrder.id}`, {
+          method: 'POST',
+          body: { description: '' },
+          auth: true,
+        })
+
+        await refreshCart();
+
+        // redirect user to payUrl returned by backend
+        if (momoResponse?.data?.payUrl) {
+          window.location.href = momoResponse.data.payUrl as string
+          return
+        }
+      }
+
       setOrderSuccessId(newOrder.id);
       showToast('Order created successfully! Awaiting payment.', 'success');
 
@@ -357,20 +379,20 @@ export default function UserProductDetailPage() {
 
             {/* Sneaker Brand & Header details */}
             <header className="space-y-3">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+              <span className="text-base font-semibold uppercase tracking-[0.25em] text-gray-600">
                 Premium Footwear
               </span>
-              <h1 className="text-4xl md:text-5xl font-display font-black text-black tracking-tight uppercase leading-[0.95]">
+              <h3 className="text-4xl md:text-4xl font-display font-black text-black tracking-tight uppercase leading-[0.95] mt-2">
                 {product.name}
-              </h1>
+              </h3>
               <div className="flex items-center gap-4 pt-1">
                 <p className="text-3xl font-display font-black text-black tracking-tight font-mono">
-                  ${displayPrice.toFixed(2)}
+                  {formatMoney(displayPrice)}
                 </p>
 
                 {/* Active Variant Badges */}
                 {selectedVariant && (
-                  <span className="text-[10px] font-bold text-on-surface-variant font-mono bg-surface-container px-2.5 py-1 rounded border border-outline-variant/10">
+                  <span className="text-sm font-bold text-on-surface-variant font-mono bg-surface-container px-2.5 py-1 rounded border border-outline-variant/10 mt-1">
                     SKU: {selectedVariant.sku}
                   </span>
                 )}
@@ -384,7 +406,7 @@ export default function UserProductDetailPage() {
                 {/* Color Selector */}
                 {uniqueColors.length > 0 && (
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-black">
+                    <div className="flex justify-between items-center text-sm font-bold uppercase tracking-wider text-black">
                       <span>Colorways</span>
                       <span className="text-on-surface-variant font-medium capitalize">{selectedColor || 'Select Color'}</span>
                     </div>
@@ -419,7 +441,7 @@ export default function UserProductDetailPage() {
                 {/* Size Selector */}
                 {uniqueSizes.length > 0 && (
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-black">
+                    <div className="flex justify-between items-center text-sm font-bold uppercase tracking-wider text-black">
                       <span>Sizing (US Men)</span>
                       <span className="text-on-surface-variant font-medium">US {selectedSize || 'Select Size'}</span>
                     </div>
@@ -460,7 +482,7 @@ export default function UserProductDetailPage() {
                   <span>Out of stock</span>
                 </div>
               ) : selectedVariant && displayStock < 5 ? (
-                <div className="flex items-center gap-2 text-amber-600 bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-xs font-bold uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-amber-600 bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-sm font-bold uppercase tracking-wider">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>Only {displayStock} left</span>
                 </div>
@@ -547,17 +569,17 @@ export default function UserProductDetailPage() {
             </div>
 
             {/* Trust Points */}
-            <div className="grid grid-cols-3 gap-4 pt-6 text-[10px] font-black uppercase tracking-wider text-on-surface-variant/60">
+            <div className="grid grid-cols-3 gap-4 pt-6 text-xs font-black uppercase tracking-wider text-on-surface-variant/60">
               <div className="flex flex-col items-center text-center gap-2 p-3 bg-surface-low rounded-xl border border-outline-variant/5">
-                <Truck className="w-4 h-4 text-black" />
+                <Truck className="w-8 h-8 text-black" />
                 <span>Free Express</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2 p-3 bg-surface-low rounded-xl border border-outline-variant/5">
-                <RotateCcw className="w-4 h-4 text-black" />
+                <RotateCcw className="w-8 h-8 text-black" />
                 <span>30-Day returns</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2 p-3 bg-surface-low rounded-xl border border-outline-variant/5">
-                <ShieldCheck className="w-4 h-4 text-black" />
+                <ShieldCheck className="w-8 h-8 text-black" />
                 <span>100% Authentic</span>
               </div>
             </div>
@@ -570,10 +592,10 @@ export default function UserProductDetailPage() {
                 <button
                   type="button"
                   onClick={() => setExpandedSection(expandedSection === 'desc' ? null : 'desc')}
-                  className="w-full flex items-center justify-between px-5 py-4 font-bold text-xs uppercase tracking-wider text-black hover:bg-surface-low/30 transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-4 font-bold text-sm uppercase tracking-wider text-black hover:bg-surface-low/30 transition-colors"
                 >
-                  <span>Description</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'desc' ? 'rotate-180' : ''}`} />
+                  <span className="text-base font-semibold">Description</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedSection === 'desc' ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence initial={false}>
                   {expandedSection === 'desc' && (
@@ -583,7 +605,7 @@ export default function UserProductDetailPage() {
                       exit={{ height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5 pt-1 text-xs text-on-surface-variant leading-relaxed font-medium">
+                      <div className="px-5 pb-5 pt-1 text-sm text-gray-600 leading-relaxed font-medium">
                         {product.description || 'No specialized description provided for this premium sneaker model.'}
                       </div>
                     </motion.div>
@@ -598,8 +620,8 @@ export default function UserProductDetailPage() {
                   onClick={() => setExpandedSection(expandedSection === 'shipping' ? null : 'shipping')}
                   className="w-full flex items-center justify-between px-5 py-4 font-bold text-xs uppercase tracking-wider text-black hover:bg-surface-low/30 transition-colors"
                 >
-                  <span>Shipping & Returns</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedSection === 'shipping' ? 'rotate-180' : ''}`} />
+                  <span className="text-base font-semibold">Shipping & Returns</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedSection === 'shipping' ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence initial={false}>
                   {expandedSection === 'shipping' && (
@@ -609,7 +631,7 @@ export default function UserProductDetailPage() {
                       exit={{ height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5 pt-1 text-xs text-on-surface-variant leading-relaxed font-medium space-y-2">
+                      <div className="px-5 pb-5 pt-1 text-sm text-gray-600 leading-relaxed font-medium space-y-2">
                         <p>📦 <strong>Standard Ground:</strong> Free delivery on all orders above $100. Fulfilled in 3-5 business days.</p>
                         <p>🚀 <strong>Express Courier:</strong> Overnight dispatch available at checkout for a flat-fee of $15.</p>
                         <p>🔄 <strong>No-Hassle Returns:</strong> Return requests accepted inside 30 days from dispatch date. Sneakers must remain completely unworn with tag wrappers intact.</p>
@@ -655,8 +677,8 @@ export default function UserProductDetailPage() {
               {/* Header */}
               <header className="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-low">
                 <div>
-                  <h3 className="text-lg font-display font-black uppercase tracking-tight">Checkout Drawer</h3>
-                  <p className="text-xs text-on-surface-variant font-medium">Verify details & complete your order</p>
+                  <h3 className="text-3xl font-display font-black uppercase tracking-tight">Checkout Drawer</h3>
+                  <p className="text-base text-on-surface-variant font-semibold mt-2">Verify details & complete your order</p>
                 </div>
                 <button
                   type="button"
@@ -728,27 +750,27 @@ export default function UserProductDetailPage() {
                     {/* Item Card Review */}
                     <div className="flex gap-4 p-4 bg-surface-low border border-outline-variant/10 rounded-xl">
                       <div className="w-16 h-16 bg-white rounded-lg overflow-hidden border border-outline-variant/10 flex-shrink-0">
-                        <img src={images[0]} alt={product.name} className="w-full h-full object-cover" />
+                        <img src={images[0]} alt={product.name} className="w-24 h-16 object-cover" />
                       </div>
-                      <div className="flex-1 text-xs">
+                      <div className="flex-1 text-sm">
                         <p className="font-bold text-black uppercase truncate">{product.name}</p>
                         <p className="text-on-surface-variant font-medium mt-0.5 capitalize">Color: {selectedColor} | Size: US {selectedSize}</p>
-                        <div className="flex justify-between items-center mt-2">
+                        <div className="flex justify-between items-center mt-1">
                           <span className="text-on-surface-variant font-medium">Qty: {quantity}</span>
-                          <span className="font-mono font-bold text-black text-sm">${(displayPrice * quantity).toFixed(2)}</span>
+                          <span className="font-mono font-bold text-black">{formatMoney(displayPrice * quantity)}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Shipping Address Header */}
                     <div className="space-y-4">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
+                      <h4 className="text-sm font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
                         1. Shipping Address
                       </h4>
 
                       {addresses.length > 0 && (
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Use Saved Address</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Use Saved Address</label>
                           <select
                             onChange={(e) => {
                               const selected = addresses.find((a) => a.id === e.target.value);
@@ -760,7 +782,7 @@ export default function UserProductDetailPage() {
                                 setStreet(selected.street);
                               }
                             }}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black mt-2"
                           >
                             <option value="">-- Select a saved address --</option>
                             {addresses.map((a) => (
@@ -774,69 +796,69 @@ export default function UserProductDetailPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Full Name *</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Full Name *</label>
                           <input
                             type="text"
                             required
                             placeholder="John Doe"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                            className="w-full border mt-1 border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Phone Number *</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Phone Number *</label>
                           <input
                             type="tel"
                             required
                             placeholder="0912345678"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                            className="w-full border mt-1 border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Province/City *</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Province/City *</label>
                           <input
                             type="text"
                             required
                             placeholder="Hồ Chí Minh"
                             value={province}
                             onChange={(e) => setProvince(e.target.value)}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                            className="w-full border mt-1 border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Ward</label>
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Ward</label>
                           <input
                             type="text"
                             placeholder="Phường Bến Nghé"
                             value={ward}
                             onChange={(e) => setWard(e.target.value)}
-                            className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                            className="w-full border mt-1 border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Street Address *</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Street Address *</label>
                         <input
                           type="text"
                           required
                           placeholder="123 Nguyễn Huệ, Lầu 3"
                           value={street}
                           onChange={(e) => setStreet(e.target.value)}
-                          className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                          className="w-full border mt-1 border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
                         />
                       </div>
                     </div>
 
                     {/* Payment Method Selector */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
+                      <h4 className="text-sm font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2">
                         2. Payment Method
                       </h4>
 
@@ -844,48 +866,37 @@ export default function UserProductDetailPage() {
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('COD')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'COD'
+                          className={`flex flex-col items-center justify-center p-3 border rounded-sm gap-1.5 transition-all cursor-pointer ${paymentMethod === 'COD'
                               ? 'border-black bg-black/5 font-bold shadow-sm'
-                              : 'border-outline-variant/30 hover:border-black/50'
+                              : 'border-outline-variant/20 hover:border-black/50'
                             }`}
                         >
-                          <DollarSign className="w-5 h-5 text-black" />
-                          <span className="text-[10px] uppercase">COD</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('VNPAY')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'VNPAY'
-                              ? 'border-blue-600 bg-blue-50 font-bold shadow-sm'
-                              : 'border-outline-variant/30 hover:border-black/50'
-                            }`}
-                        >
-                          <CreditCard className="w-5 h-5 text-blue-600" />
-                          <span className="text-[10px] uppercase text-blue-600">VNPAY</span>
+                          <DollarSign className="w-6 h-6 text-black" />
+                          <span className="text-xs uppercase">COD</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('MOMO')}
-                          className={`flex flex-col items-center justify-center p-3 border rounded-xl gap-1.5 transition-all cursor-pointer ${paymentMethod === 'MOMO'
+                          className={`flex flex-col items-center justify-center p-3 border rounded-sm gap-1.5 transition-all cursor-pointer ${paymentMethod === 'MOMO'
                               ? 'border-pink-600 bg-pink-50 font-bold shadow-sm'
                               : 'border-outline-variant/30 hover:border-black/50'
                             }`}
                         >
-                          <QrCode className="w-5 h-5 text-pink-600" />
-                          <span className="text-[10px] uppercase text-pink-600">MOMO</span>
+                          <QrCode className="w-6 h-6 text-pink-600" />
+                          <span className="text-xs uppercase text-pink-600">MOMO</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Optional Checkout Note */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Order Note (Optional)</label>
+                      <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Order Note (Optional)</label>
                       <textarea
                         rows={2}
                         placeholder="Deliver inside office hours only, please."
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black resize-none"
+                        className="w-full mt-1 border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black resize-none"
                       />
                     </div>
 
@@ -899,17 +910,17 @@ export default function UserProductDetailPage() {
 
                     {/* Pricing Summary */}
                     <div className="pt-4 border-t border-outline-variant/20 space-y-2 text-xs font-semibold text-on-surface-variant">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span>Items Subtotal</span>
-                        <span className="text-black font-mono">${(displayPrice * quantity).toFixed(2)}</span>
+                        <span className="text-black font-mono mt-2">{formatMoney(displayPrice * quantity)}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span>Shipping Courier Fee</span>
                         <span className="text-black font-bold uppercase">FREE</span>
                       </div>
                       <div className="flex justify-between pt-2 text-sm font-black text-black border-t border-dashed border-outline-variant/20">
                         <span>Final Price</span>
-                        <span className="font-mono text-base">${(displayPrice * quantity).toFixed(2)}</span>
+                        <span className="font-mono text-base">{formatMoney(displayPrice * quantity)}</span>
                       </div>
                     </div>
 

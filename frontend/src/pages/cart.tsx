@@ -31,6 +31,7 @@ import { cartService, CartItem } from '@/services/cart.service';
 import { couponService, ValidateCouponResponse } from '@/features/coupons/services/coupon.service';
 import { orderService } from '@/features/orders/services/order.service';
 import { ROUTES } from '@/routes';
+import { formatMoney } from '@/utils/format';
 
 // --- Components ---
 
@@ -138,7 +139,7 @@ export default function CartPage() {
 
   const formatPrice = (price: number) => {
     if (isVnd) {
-      return `${price.toLocaleString('vi-VN')} đ`;
+      return `${price.toLocaleString('vi-VN')}`;
     }
     return `$${price.toFixed(2)}`;
   };
@@ -328,9 +329,9 @@ export default function CartPage() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full border border-outline-variant/20 shadow-sm">
-                  <Truck className="h-5 w-5 text-black" />
+                  <Truck className="h-6 w-8 text-black" />
                 </div>
-                <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-black">1. Shipping Address</h2>
+                <h2 className="font-heading text-xl font-black uppercase tracking-tight text-black">1. Shipping Address</h2>
               </div>
               {addresses.length > 0 && (
                 <button
@@ -345,19 +346,19 @@ export default function CartPage() {
             {selectedAddress ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-6 text-black">
                 <div className="md:col-span-2 space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant opacity-60">Full Name</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-on-surface-variant opacity-60">Full Name</span>
                   <p className="text-lg font-bold border-b border-outline-variant/20 pb-2">{selectedAddress.fullName}</p>
                 </div>
                 <div className="md:col-span-2 space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant opacity-60">Street Address</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-on-surface-variant opacity-60">Street Address</span>
                   <p className="text-lg font-bold border-b border-outline-variant/20 pb-2">{selectedAddress.street}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant opacity-60">Province / City</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-on-surface-variant opacity-60">Province / City</span>
                   <p className="text-lg font-bold border-b border-outline-variant/20 pb-2">{selectedAddress.province}</p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant opacity-60">Phone Number</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-on-surface-variant opacity-60">Phone Number</span>
                   <p className="text-lg font-bold border-b border-outline-variant/20 pb-2">{selectedAddress.phone}</p>
                 </div>
               </div>
@@ -379,16 +380,15 @@ export default function CartPage() {
           <section className="bg-surface-container rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
             <div className="flex items-center gap-4 mb-8">
               <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full border border-outline-variant/20 shadow-sm">
-                <CreditCard className="h-5 w-5 text-black" />
+                <CreditCard className="h-6 w-8 text-black" />
               </div>
-              <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-black">2. Payment Method</h2>
+              <h2 className="font-heading text-xl font-black uppercase tracking-tight text-black">2. Payment Method</h2>
             </div>
 
             <div className="space-y-4">
               {[
                 { id: 'cod', label: 'Cash on Delivery (COD)', icon: Wallet },
-                { id: 'vnpay', label: 'VNPAY Gateway', icon: QrCode },
-                { id: 'momo', label: 'MOMO e-Wallet', icon: Wallet },
+                { id: 'momo', label: 'MOMO e-Wallet', icon: QrCode },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -419,7 +419,7 @@ export default function CartPage() {
         {/* Right Column: Order Summary & Cart Items */}
         <aside className="lg:col-span-5">
           <div className="sticky top-32 bg-surface-container rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
-            <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-black mb-8 border-b border-outline-variant/20 pb-6 flex items-center gap-3">
+            <h2 className="font-heading text-xl font-black uppercase tracking-tight text-black mb-8 border-b border-outline-variant/20 pb-6 flex items-center gap-3">
               <ShoppingBag className="h-6 w-6 text-black" />
               Order Summary
             </h2>
@@ -445,7 +445,7 @@ export default function CartPage() {
                       </div>
                       <div className="flex-grow flex flex-col justify-center">
                         <h3 className="font-bold text-base leading-tight uppercase tracking-tight text-black">{item.variant.product.name}</h3>
-                        <p className="text-[10px] font-bold text-on-surface-variant opacity-60 uppercase mt-1 tracking-widest">
+                        <p className="text-xs font-bold text-on-surface-variant opacity-60 uppercase mt-1 tracking-widest">
                           Color: {item.variant.color || 'Default'} | Size: US {item.variant.size || 'N/A'}
                         </p>
 
@@ -467,8 +467,8 @@ export default function CartPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end justify-between py-1 shrink-0">
-                        <span className="font-bold text-base text-black font-mono">
-                          {formatPrice(Number(item.variant.price) * item.quantity)}
+                        <span className="font-heading font-bold text-base text-black font-mono">
+                          {formatMoney(Number(item.variant.price) * item.quantity)}
                         </span>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
@@ -519,20 +519,20 @@ export default function CartPage() {
                 <div className="rounded-3xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="font-bold uppercase tracking-widest">{validatedCoupon.coupon.code}</p>
-                      <p className="text-xs text-emerald-800">Discount applied to order</p>
+                      <p className="font-bold uppercase tracking-widest mt-1">{validatedCoupon.coupon.code}</p>
+                      <p className="text-sm text-emerald-800 mt-1">Discount applied to order</p>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveCoupon}
-                      className="text-[10px] font-black uppercase tracking-widest text-emerald-900/80 hover:text-emerald-900"
+                      className="text-[10px] font-black bg-red-600 text-white uppercase tracking-widest px-3 py-1 rounded hover:bg-red-700 transition-colors"
                     >
                       Remove
                     </button>
                   </div>
                   <div className="mt-3 flex justify-between text-sm">
                     <span>Discount</span>
-                    <span className="font-bold">{formatPrice(validatedCoupon.discountAmount)}</span>
+                    <span className="font-bold font-heading">{formatMoney(validatedCoupon.discountAmount)}</span>
                   </div>
                 </div>
               )}
@@ -542,14 +542,14 @@ export default function CartPage() {
             <div className="space-y-4 pt-8 border-t border-outline-variant/20">
               <div className="flex justify-between text-on-surface-variant">
                 <span className="text-xs font-bold uppercase tracking-widest opacity-60">Subtotal</span>
-                <span className="font-bold text-black font-mono">{formatPrice(subtotal)}</span>
+                <span className="font-heading font-bold text-black font-mono">{formatMoney(subtotal)}</span>
               </div>
               <div className="flex justify-between text-on-surface-variant items-center">
                 <span className="font-bold text-emerald-600 uppercase tracking-widest text-xs font-sans">FREE</span>
               </div>
               <div className="flex justify-between items-center pt-6 mt-4 border-t border-outline-variant/25">
                 <span className="font-heading text-2xl font-black uppercase text-black">Total</span>
-                <span className="font-heading text-2xl font-black text-black font-mono">{formatPrice(total)}</span>
+                <span className="font-heading text-2xl font-black text-black font-mono">{formatMoney(total)}</span>
               </div>
             </div>
 
@@ -569,7 +569,7 @@ export default function CartPage() {
             </motion.button>
 
             {/* Trust Badge */}
-            <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-40">
+            <div className="mt-6 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-600 opacity-40">
               <ShieldCheck className="h-4 w-4 text-black" />
               Payments are secure and encrypted
             </div>

@@ -29,7 +29,7 @@ const RatingBar = ({ star, count, total }: { star: number; count: number; total:
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3 group">
-      <span className="text-[10px] font-black font-mono text-black w-2 shrink-0">{star}</span>
+      <span className="text-sm font-black font-mono text-black w-2 shrink-0">{star}</span>
       <div className="flex-1 h-1.5 bg-black/8 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
@@ -38,7 +38,7 @@ const RatingBar = ({ star, count, total }: { star: number; count: number; total:
           className="h-full bg-black rounded-full"
         />
       </div>
-      <span className="text-[10px] font-mono font-bold text-black/40 w-7 text-right shrink-0">
+      <span className="text-sm font-mono font-bold text-black/40 w-7 text-right shrink-0">
         {count}
       </span>
     </div>
@@ -75,7 +75,7 @@ const ReviewCard = ({
       className="group relative bg-white border border-black/8 rounded-2xl p-6 hover:border-black/20 hover:shadow-sm transition-all duration-300"
     >
       {/* Verified badge */}
-      <div className="absolute top-5 right-5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-full">
+      <div className="absolute top-5 right-5 flex items-center gap-1 text-xs font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-full">
         <Check className="w-2.5 h-2.5" />
         <span>Verified</span>
       </div>
@@ -89,18 +89,18 @@ const ReviewCard = ({
           <p className="text-xs font-black uppercase tracking-wider text-black truncate">
             {review.user?.name || 'Anonymous'}
           </p>
-          <p className="text-[10px] font-mono text-black/40 mt-0.5">{formattedDate}</p>
+          <p className="text-xs font-mono text-gray-600 mt-0.5">{formattedDate}</p>
         </div>
       </div>
 
       {/* Stars */}
       <div className="mb-3">
-        <StarRating rating={review.rating} size={13} />
+        <StarRating rating={review.rating} size={16} />
       </div>
 
       {/* Comment */}
       {review.comment && (
-        <p className="text-xs text-black/60 font-medium leading-relaxed line-clamp-4">
+        <p className="text-sm text-gray-600 font-medium leading-relaxed line-clamp-4">
           {review.comment}
         </p>
       )}
@@ -109,7 +109,7 @@ const ReviewCard = ({
       {onEdit && (
         <button
           onClick={() => onEdit(review)}
-          className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-black/30 hover:text-black transition-colors"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-black/30 hover:text-black transition-colors"
         >
           <PenLine className="w-3 h-3" />
           <span>Edit</span>
@@ -171,10 +171,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
       {/* ── Section header ────────────────────────────────────────────────── */}
       <div className="flex items-end justify-between mb-10">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black/30">
+          <span className="text-sm font-bold uppercase tracking-[0.25em] text-black/30">
             Community
           </span>
-          <h2 className="text-4xl font-display font-black uppercase tracking-tight text-black mt-1 leading-none">
+          <h2 className="text-3xl font-display font-black uppercase tracking-tight text-black mt-1 leading-none">
             Reviews
           </h2>
         </div>
@@ -182,7 +182,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
         {/* Write a review CTA */}
         <button
           onClick={handleOpenForm}
-          className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black/85 transition-all shadow-md active:scale-95"
+          className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-black/85 transition-all shadow-md active:scale-95"
         >
           <PenLine className="w-3.5 h-3.5" />
           <span>Write a Review</span>
@@ -210,7 +210,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
               <aside className="lg:col-span-3">
                 <div className="sticky top-24 space-y-6">
                   {/* Big rating number */}
-                  <div className="bg-black text-white rounded-2xl p-7 text-center">
+                  <div className="bg-black text-white rounded-2xl p-5 text-center">
                     <p className="text-6xl font-black font-mono leading-none">
                       {avgRating.toFixed(1)}
                     </p>
@@ -223,8 +223,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                   </div>
 
                   {/* Rating breakdown */}
-                  <div className="bg-white border border-black/8 rounded-2xl p-5 space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-4">
+                  <div className="bg-white border border-black/8 rounded-2xl p-5 space-y-3 text-base">
+                    <p className="text-sm font-bold uppercase tracking-widest text-gray-600 mb-4">
                       Breakdown
                     </p>
                     {ratingCounts.map(({ star, count }) => (
@@ -285,10 +285,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                 <Star className="w-6 h-6 text-black/20" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-black">
+                <p className="text-base font-black uppercase tracking-widest text-black">
                   No Reviews Yet
                 </p>
-                <p className="text-[11px] text-black/40 font-medium mt-1 max-w-xs">
+                <p className="text-sm text-black/40 font-medium mt-1 max-w-xs">
                   Reviews appear after delivered orders are rated. Be the first to share your experience.
                 </p>
               </div>
