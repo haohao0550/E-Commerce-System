@@ -9,15 +9,32 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
 import { PageLoader } from '@/components/common/PageLoader';
 import { Sidebar } from '@/layout/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { productService } from '@/features/products/services/product.service';
 import { userService } from '@/features/users/services/user.service';
+import { dashboardService } from '@/features/dashboards/services/dashboard.service';
 import { ROUTES } from '@/routes';
 import type { Product } from '@/features/products/types/product';
 import type { User } from '@/features/users/types/user';
+import type {
+  DashboardGroupBy,
+  RevenuePoint,
+  OrderCountPoint,
+} from '@/features/dashboards/types/dashboard';
 
 /**
  * AdminDashboardPage Component
@@ -34,6 +51,17 @@ export default function AdminDashboardPage() {
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // --- Dashboard Stats States ---
+  const [statsMode, setStatsMode] = useState<'preset' | 'range'>('preset');
+  const [groupBy, setGroupBy] = useState<DashboardGroupBy>('day');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
+  const [orderCountData, setOrderCountData] = useState<OrderCountPoint[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
   useEffect(() => {
     if (user?.role !== 'ADMIN') return;
@@ -66,6 +94,69 @@ export default function AdminDashboardPage() {
 
     void loadDashboardData();
   }, [user, showToast]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+
+  const revenueChartData = revenueData.map((item) => ({
+    period: item.period,
+    value: item.revenue,
+  }));
+
+  const orderChartData = orderCountData.map((item) => ({
+    period: item.period,
+    value: item.count,
+  }));
+
+  const loadStats = async () => {
+    if (user?.role !== 'ADMIN') return;
+
+    if (statsMode === 'range' && (!startDate || !endDate)) {
+      setStatsError('Please select both start date and end date.');
+      return;
+    }
+
+    if (statsMode === 'range' && startDate && endDate && endDate < startDate) {
+      setStatsError('End date must be the same or later than start date.');
+      return;
+    }
+
+    setStatsError(null);
+    setIsLoadingStats(true);
+
+    try {
+      const params = statsMode === 'range'
+        ? { groupBy, startDate, endDate }
+        : { groupBy };
+
+      const [revenueRes, orderCountRes] = await Promise.all([
+        dashboardService.getRevenue(params),
+        dashboardService.getOrderCount(params),
+      ]);
+
+      setRevenueData(revenueRes);
+      setOrderCountData(orderCountRes);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      setStatsError('Failed to load stats. Please adjust date range or group by.');
+      showToast('Failed to load stats overview', 'error');
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      void loadStats();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.role]);
 
   // --- Role Security Guard ---
   if (isAuthLoading) {
@@ -118,9 +209,11 @@ export default function AdminDashboardPage() {
                 <TrendingUp className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-3xl font-display font-black text-on-surface font-mono">$45,210.00</p>
+            <p className="text-2xl md:text-3xl font-display font-black text-on-surface font-mono leading-tight break-words">
+              {isLoadingData ? '...' : formatCurrency(revenueData.reduce((sum, item) => sum + item.revenue, 0))}
+            </p>
             <p className="text-[10px] font-bold uppercase tracking-tight text-on-surface-variant/40 mt-1">
-              +12.4% From last month
+              + {isLoadingData ? '...' : ((revenueData.reduce((sum, item) => sum + item.revenue, 0) / 1000).toFixed(1))}% From last month
             </p>
           </motion.div>
 
@@ -310,6 +403,246 @@ export default function AdminDashboardPage() {
                 </span>
               </Link>
             </div>
+          </motion.div>
+        </section>
+
+        {/* Stats Filters + Results */}
+        <section className="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-8 mt-12 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white border border-surface-container-highest rounded-2xl p-6 shadow-sm"
+          >
+            <h3 className="text-xl font-display font-bold text-on-surface mb-4">Stats Filters</h3>
+
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/60 mb-3">
+                  Mode
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatsMode('preset');
+                      setStatsError(null);
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest border transition-all ${
+                      statsMode === 'preset'
+                        ? 'bg-brand-primary text-brand-on-primary border-brand-primary'
+                        : 'bg-white text-on-surface-variant border-surface-container-high'
+                    }`}
+                  >
+                    Preset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatsMode('range');
+                      setStatsError(null);
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest border transition-all ${
+                      statsMode === 'range'
+                        ? 'bg-brand-primary text-brand-on-primary border-brand-primary'
+                        : 'bg-white text-on-surface-variant border-surface-container-high'
+                    }`}
+                  >
+                    Date Range
+                  </button>
+                </div>
+                <p className="text-[11px] text-on-surface-variant mt-2">
+                  Preset uses default recent windows. Date Range uses your custom start/end dates.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-on-surface-variant/60">
+                  {statsMode === 'range' ? 'Group By' : 'Type'}
+                </label>
+                <select
+                  value={groupBy}
+                  onChange={(event) => setGroupBy(event.target.value as DashboardGroupBy)}
+                  className="mt-2 w-full border border-surface-container-high rounded-lg px-3 py-2 text-sm font-semibold text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                >
+                  <option value="day">{statsMode === 'range' ? 'Day' : 'Last 24 Hours'}</option>
+                  <option value="month">{statsMode === 'range' ? 'Month' : 'Last 30 Days'}</option>
+                  <option value="year">{statsMode === 'range' ? 'Year' : 'Last 12 Months'}</option>
+                </select>
+              </div>
+
+              {statsMode === 'range' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-on-surface-variant/60">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(event) => setStartDate(event.target.value)}
+                      className="mt-2 w-full border border-surface-container-high rounded-lg px-3 py-2 text-sm font-semibold text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-on-surface-variant/60">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate || undefined}
+                      onChange={(event) => setEndDate(event.target.value)}
+                      className="mt-2 w-full border border-surface-container-high rounded-lg px-3 py-2 text-sm font-semibold text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {statsError && (
+                <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">
+                  {statsError}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => void loadStats()}
+                className="w-full bg-brand-primary text-brand-on-primary rounded-lg px-4 py-2 text-sm font-extrabold uppercase tracking-wider shadow-sm hover:opacity-90 transition-opacity"
+              >
+                {isLoadingStats ? 'Loading...' : 'Load Stats'}
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="bg-white border border-surface-container-highest rounded-2xl p-6 shadow-sm"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div>
+                <h3 className="text-2xl font-display font-bold text-on-surface">Stats Overview</h3>
+                <p className="text-sm text-on-surface-variant">
+                  Revenue and order trends grouped by {groupBy}.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={chartType}
+                  onChange={(event) => setChartType(event.target.value as 'bar' | 'line')}
+                  className="border border-surface-container-high rounded-lg px-2.5 py-1.5 text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                >
+                  <option value="bar">Bar</option>
+                  <option value="line">Line</option>
+                </select>
+                <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-surface-container-high px-3 py-1 rounded-full text-on-surface-variant">
+                  {statsMode === 'range' ? 'Custom range' : 'Preset'}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+                <div className="border border-surface-container-high rounded-2xl p-5 relative overflow-hidden">
+                  {isLoadingStats && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                      Loading...
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold text-on-surface">Revenue</h4>
+                    <span className="text-sm font-black text-on-surface">
+                      {formatCurrency(revenueData.reduce((sum, item) => sum + item.revenue, 0))}
+                    </span>
+                  </div>
+                  {revenueChartData.length === 0 ? (
+                    <p className="text-sm text-on-surface-variant">No revenue data available.</p>
+                  ) : (
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart data={revenueChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
+                            <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                            <YAxis
+                              tick={{ fontSize: 11 }}
+                              tickFormatter={(value) => formatCurrency(Number(value))}
+                            />
+                            <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                            <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                          </BarChart>
+                        ) : (
+                          <LineChart data={revenueChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
+                            <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                            <YAxis
+                              tick={{ fontSize: 11 }}
+                              tickFormatter={(value) => formatCurrency(Number(value))}
+                            />
+                            <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                            <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#2563eb"
+                              strokeWidth={2}
+                              dot={{ r: 2 }}
+                              activeDot={{ r: 4 }}
+                            />
+                          </LineChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border border-surface-container-high rounded-2xl p-5 relative overflow-hidden">
+                  {isLoadingStats && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                      Loading...
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold text-on-surface">Orders</h4>
+                    <span className="text-sm font-black text-on-surface">
+                      {orderCountData.reduce((sum, item) => sum + item.count, 0)}
+                    </span>
+                  </div>
+                  {orderChartData.length === 0 ? (
+                    <p className="text-sm text-on-surface-variant">No order data available.</p>
+                  ) : (
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart data={orderChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
+                            <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                            <YAxis tick={{ fontSize: 11 }} />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#16a34a" radius={[6, 6, 0, 0]} />
+                          </BarChart>
+                        ) : (
+                          <LineChart data={orderChartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E6E3E0" />
+                            <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                            <YAxis tick={{ fontSize: 11 }} />
+                            <Tooltip />
+                            <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#16a34a"
+                              strokeWidth={2}
+                              dot={{ r: 2 }}
+                              activeDot={{ r: 4 }}
+                            />
+                          </LineChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </div>
+              </div>
           </motion.div>
         </section>
       </main>
