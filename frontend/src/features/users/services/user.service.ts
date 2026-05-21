@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api-client';
+import useApiStore from '@/store/apiStore';
 import type { User, UserRole } from '@/features/users/types/user';
 
 export interface UpdateProfilePayload {
@@ -46,55 +46,48 @@ const buildQuery = (params: GetUsersParams = {}) => {
 
 export const userService = {
   async getProfile() {
-    const response = await apiClient<{ user: User }>('/users/me');
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ user: User }>('/users/me');
     return response.data.user;
   },
 
   async updateProfile(payload: UpdateProfilePayload) {
-    const response = await apiClient<{ user: User }>('/users/me', {
-      method: 'PATCH',
-      body: payload,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ user: User }>('/users/me', { method: 'PATCH', body: payload });
     return response.data.user;
   },
 
   async changePassword(payload: ChangePasswordPayload) {
-    await apiClient<Record<string, never>>('/users/me/change-password', {
-      method: 'PATCH',
-      body: payload,
-    });
+    const { callApi } = useApiStore.getState();
+    await callApi<Record<string, never>>('/users/me/change-password', { method: 'PATCH', body: payload });
   },
 
   async deleteAccount() {
-    await apiClient<Record<string, never>>('/users/me', {
-      method: 'DELETE',
-    });
+    const { callApi } = useApiStore.getState();
+    await callApi<Record<string, never>>('/users/me', { method: 'DELETE' });
   },
 
   async getUsers(params?: GetUsersParams) {
-    const response = await apiClient<UsersListData>(`/admin/users${buildQuery(params)}`);
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<UsersListData>(`/admin/users${buildQuery(params)}`);
     return response.data;
   },
 
   async updateUserRole(id: string, role: UserRole) {
-    const response = await apiClient<{ user: User }>(`/admin/users/${id}/role`, {
-      method: 'PATCH',
-      body: { role },
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ user: User }>(`/admin/users/${id}/role`, { method: 'PATCH', body: { role } });
     return response.data.user;
   },
 
   async deleteUser(id: string) {
-    const response = await apiClient<{ user: User }>(`/admin/users/${id}`, {
-      method: 'DELETE',
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ user: User }>(`/admin/users/${id}`, { method: 'DELETE' });
     return response.data.user;
   },
 
   async restoreUser(id: string) {
-    const response = await apiClient<{ user: User }>(`/admin/users/${id}/restore`, {
-      method: 'PATCH',
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ user: User }>(`/admin/users/${id}/restore`, { method: 'PATCH' });
     return response.data.user;
   },
 
@@ -102,10 +95,8 @@ export const userService = {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await apiClient<{ image: string }>('/upload/avatar', {
-      method: 'POST',
-      body: formData,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ image: string }>('/upload/avatar', { method: 'POST', body: formData });
     return response.data.image;
   },
 };

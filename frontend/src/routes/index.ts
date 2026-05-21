@@ -9,6 +9,7 @@ export const ROUTES = {
   adminProducts: '/admin/products',
   adminCategories: '/admin/categories',
   cart: '/cart',
+  paymentResult: '/payment-result',
   adminOrders: '/admin/orders',
 } as const;
 

@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api-client';
+import useApiStore from '@/store/apiStore';
 
 export interface ShippingAddressInput {
   fullName: string;
@@ -74,13 +74,33 @@ export interface OrdersQuery {
   limit?: number;
 }
 
+export interface CreateMomoPaymentResponse {
+  orderId: string;
+  paymentOrderId: string;
+  paymentRequestId: string;
+  amount: number;
+  payUrl: string;
+  qrCodeUrl: string;
+  deeplink: string;
+}
+
 class OrderService {
   async createOrder(data: CreateOrderInput): Promise<Order> {
-    const response = await apiClient<Order>('/orders', {
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<Order>('/orders', { method: 'POST', body: data, auth: true });
+    return response.data;
+  }
+
+  async createMomoPayment(orderId: string, description?: string): Promise<CreateMomoPaymentResponse> {
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<CreateMomoPaymentResponse>(`/payment/momo/create/${orderId}`, {
       method: 'POST',
-      body: data,
+      body: {
+        description: description ?? undefined,
+      },
       auth: true,
     });
+
     return response.data;
   }
 
@@ -92,10 +112,8 @@ class OrderService {
     if (query?.limit) params.append('limit', String(query.limit));
 
     const path = `/orders?${params.toString()}`;
-    const response = await apiClient<Order[]>(path, {
-      method: 'GET',
-      auth: true,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<Order[]>(path, { method: 'GET', auth: true });
 
     const orders = response.data || [];
     const total = (response as any).pagination?.total || orders.length;
@@ -104,18 +122,14 @@ class OrderService {
   }
 
   async getUserOrderById(id: string): Promise<Order> {
-    const response = await apiClient<Order>(`/orders/${id}`, {
-      method: 'GET',
-      auth: true,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<Order>(`/orders/${id}`, { method: 'GET', auth: true });
     return response.data;
   }
 
   async cancelOrder(id: string): Promise<Order> {
-    const response = await apiClient<Order>(`/orders/${id}/cancel`, {
-      method: 'PATCH',
-      auth: true,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<Order>(`/orders/${id}/cancel`, { method: 'PATCH', auth: true });
     return response.data;
   }
 }

@@ -191,7 +191,7 @@ model Order {
   status          OrderStatus   @default(PENDING)
   paymentMethod   PaymentMethod @default(COD)
   paymentStatus   PaymentStatus @default(UNPAID)
-// 👇 PHẢI CÓ 3 DÒNG NÀY Ở ĐÂY 👇
+
   paymentOrderId   String?
   paymentRequestId String?
   paymentOrderInfo String?

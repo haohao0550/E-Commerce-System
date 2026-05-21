@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Diamond } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { ROUTES } from '@/routes';
 import { productService } from '@/features/products/services/product.service';
 import type { Product } from '@/features/products/types/product';

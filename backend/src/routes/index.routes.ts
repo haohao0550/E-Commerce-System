@@ -14,6 +14,7 @@ import {
 } from '@/modules/product-variant/index.js';
 import { couponRoutes, adminCouponRoutes } from '@/modules/coupons/index.js';
 import { reviewRoutes, adminReviewRoutes } from '@/modules/reviews/index.js';
+import { paymentMoMoRouter } from '@/modules/payment/index.js'
 
 const router = Router();
 
@@ -34,5 +35,7 @@ router.use('/coupons', couponRoutes);
 router.use('/admin/coupons', adminCouponRoutes);
 router.use(reviewRoutes);
 router.use('/admin', adminReviewRoutes);
+router.use('/payment/momo', paymentMoMoRouter)
+
 
 export default router;

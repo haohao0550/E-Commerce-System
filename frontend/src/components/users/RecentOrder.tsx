@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Package, Clock, ShieldCheck, XCircle, ArrowRight, RefreshCw, AlertTriangle, Truck } from 'lucide-react';
+import { Package, Clock, ShieldCheck, XCircle, ArrowRight, RefreshCw, AlertTriangle, Truck, Star } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
-import { orderService, Order } from '@/features/orders/services/order.service';
+import { useAuth } from '@/context/AuthContext';
+import { orderService, Order, OrderItem } from '@/features/orders/services/order.service';
+import { ReviewFormModal } from '@/features/reviews/components/ReviewFormModal';
 
 export const RecentOrder = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { user } = useAuth();
+
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{ orderItem: OrderItem; orderId: string } | null>(null);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -73,6 +80,11 @@ export const RecentOrder = () => {
       default:
         return 'bg-surface-low text-on-surface-variant';
     }
+  };
+
+  const handleOpenReviewModal = (orderItem: OrderItem, orderId: string) => {
+    setSelectedItem({ orderItem, orderId });
+    setReviewModalOpen(true);
   };
 
   if (isLoading) {
@@ -172,23 +184,37 @@ export const RecentOrder = () => {
                 }
 
                 return (
-                  <div key={item.id} className="flex gap-4 items-center border-b border-outline-variant/10 pb-4 last:border-0 last:pb-0">
-                    <div className="w-16 h-16 bg-surface-low rounded-lg overflow-hidden flex-shrink-0 border border-outline-variant/10">
-                      <img
-                        src={imgUrl}
-                        alt={item.productName}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-black uppercase truncate">{item.productName}</p>
-                      <p className="text-xs text-on-surface-variant font-medium mt-0.5 capitalize">{item.variantInfo || 'N/A'}</p>
-                      <div className="flex justify-between items-center mt-1 text-xs">
-                        <span className="text-on-surface-variant font-medium">Qty: {item.quantity}</span>
-                        <span className="font-mono font-bold text-black">${Number(item.price).toFixed(2)}</span>
+                  <div key={item.id} className="flex gap-4 items-center justify-between border-b border-outline-variant/10 pb-4 last:border-0 last:pb-0">
+                    <div className="flex gap-4 items-center flex-1 min-w-0">
+                      <div className="w-16 h-16 bg-surface-low rounded-lg overflow-hidden flex-shrink-0 border border-outline-variant/10">
+                        <img
+                          src={imgUrl}
+                          alt={item.productName}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-black uppercase truncate">{item.productName}</p>
+                        <p className="text-xs text-on-surface-variant font-medium mt-0.5 capitalize">{item.variantInfo || 'N/A'}</p>
+                        <div className="flex justify-between items-center mt-1 text-xs">
+                          <span className="text-on-surface-variant font-medium">Qty: {item.quantity}</span>
+                          <span className="font-mono font-bold text-black">${Number(item.price).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Review Button for Delivered Orders */}
+                    {order.status === 'DELIVERED' && user && item.variant?.productId && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenReviewModal(item, order.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 border border-primary text-primary hover:bg-primary/10 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                      >
+                        <Star className="w-4 h-4" />
+                        <span>Review</span>
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -240,6 +266,37 @@ export const RecentOrder = () => {
           </section>
         );
       })}
+
+      {/* Review Form Modal */}
+      {selectedItem && (
+        <ReviewFormModal
+          open={reviewModalOpen}
+          productId={selectedItem.orderItem.variant?.productId || ''}
+          orderId={selectedItem.orderId}
+          productName={selectedItem.orderItem.productName}
+          productImage={(() => {
+            try {
+              const imagesJson = selectedItem.orderItem.variant?.product?.images;
+              if (imagesJson) {
+                const parsed = typeof imagesJson === 'string' ? JSON.parse(imagesJson) : imagesJson;
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  return parsed[0];
+                }
+              }
+            } catch (e) {
+              // Fallback
+            }
+            return undefined;
+          })()}
+          onClose={() => setReviewModalOpen(false)}
+          onSuccess={() => {
+            setReviewModalOpen(false);
+            setSelectedItem(null);
+            // Refresh orders after successful review
+            void fetchOrders();
+          }}
+        />
+      )}
     </div>
   );
 };

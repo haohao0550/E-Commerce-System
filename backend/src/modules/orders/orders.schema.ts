@@ -29,7 +29,7 @@ export const shippingAddressSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-    paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+    paymentMethod: z.nativeEnum(PaymentMethod),
     shippingAddress: shippingAddressSchema,
     couponId: z.string().uuid('Invalid coupon id').optional(),
     note: z.string().max(500, 'Note cannot exceed 500 characters').optional(),
