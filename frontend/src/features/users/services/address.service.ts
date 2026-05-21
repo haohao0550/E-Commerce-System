@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api-client';
+import useApiStore from '@/store/apiStore';
 
 export interface UserAddress {
   id: string;
@@ -25,37 +25,31 @@ export interface CreateAddressPayload {
 
 export const addressService = {
   async getAddresses() {
-    const response = await apiClient<{ data: UserAddress[] }>('/addresses');
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ data: UserAddress[] }>('/addresses');
     return response.data.data;
   },
 
   async createAddress(payload: CreateAddressPayload) {
-    const response = await apiClient<{ data: UserAddress }>('/addresses', {
-      method: 'POST',
-      body: payload,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ data: UserAddress }>('/addresses', { method: 'POST', body: payload });
     return response.data.data;
   },
 
   async updateAddress(id: string, payload: Partial<CreateAddressPayload>) {
-    const response = await apiClient<{ data: UserAddress }>(`/addresses/${id}`, {
-      method: 'PATCH',
-      body: payload,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ data: UserAddress }>(`/addresses/${id}`, { method: 'PATCH', body: payload });
     return response.data.data;
   },
 
   async deleteAddress(id: string) {
-    await apiClient<Record<string, never>>(`/addresses/${id}`, {
-      method: 'DELETE',
-    });
+    const { callApi } = useApiStore.getState();
+    await callApi<Record<string, never>>(`/addresses/${id}`, { method: 'DELETE' });
   },
 
   async setDefaultAddress(id: string) {
-    const response = await apiClient<{ data: UserAddress }>(`/addresses/${id}/default`, {
-      method: 'PATCH',
-      body: { isDefault: true },
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<{ data: UserAddress }>(`/addresses/${id}/default`, { method: 'PATCH', body: { isDefault: true } });
     return response.data.data;
   },
 };

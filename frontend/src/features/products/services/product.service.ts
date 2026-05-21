@@ -1,24 +1,6 @@
 import { apiClient } from '@/services/api-client';
 import type { Product } from '@/features/products/types/product';
-
-export interface GetProductsParams {
-  keyword?: string;
-  categoryId?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  page?: number;
-  limit?: number;
-}
-
-export interface ProductsListData {
-  products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import type { GetProductsParams, ProductsListData } from '@/types/product';
 
 const buildQuery = (params: GetProductsParams = {}) => {
   const searchParams = new URLSearchParams();
@@ -33,6 +15,11 @@ const buildQuery = (params: GetProductsParams = {}) => {
   return query ? `?${query}` : '';
 };
 
+/**
+ * Product Service - Handles product API calls
+ * Note: Direct apiClient usage. State management delegated to useProductStore (Zustand)
+ * @deprecated Prefer using useProductStore actions directly in components
+ */
 export const productService = {
   async getProducts(params?: GetProductsParams) {
     const response = await apiClient<Product[]>(`/products${buildQuery(params)}`, { auth: false });
@@ -43,7 +30,10 @@ export const productService = {
   },
 
   async getProductById(id: string) {
-    const response = await apiClient<Product>(`/products/${id}`, { auth: false });
+    const response = await apiClient<Product>(`/products/${id}`, {
+      method: 'GET',
+      auth: false,
+    });
     return response.data;
   },
 
@@ -53,33 +43,25 @@ export const productService = {
   },
 
   async createProduct(data: unknown) {
-    const response = await apiClient<Product>('/products', {
-      method: 'POST',
-      body: data,
-    });
+    const response = await apiClient<Product>('/products', { method: 'POST', body: data });
     return response.data;
   },
 
   async updateProduct(id: string, data: unknown) {
-    const response = await apiClient<Product>(`/products/${id}`, {
-      method: 'PATCH',
-      body: data,
-    });
+    const response = await apiClient<Product>(`/products/${id}`, { method: 'PATCH', body: data });
     return response.data;
   },
 
   async deleteProduct(id: string) {
-    const response = await apiClient<Product>(`/products/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await apiClient<Product>(`/products/${id}`, { method: 'DELETE' });
     return response.data;
   },
 
   async restoreProduct(id: string) {
-    const response = await apiClient<Product>(`/products/${id}/restore`, {
-      method: 'PATCH',
-    });
+    const response = await apiClient<Product>(`/products/${id}/restore`, { method: 'PATCH' });
     return response.data;
   },
 };
+
+export type { GetProductsParams, ProductsListData };
 

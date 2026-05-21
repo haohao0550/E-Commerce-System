@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api-client';
+import useApiStore from '@/store/apiStore';
 
 export interface CouponPayload {
   code: string;
@@ -26,11 +26,8 @@ export interface ValidateCouponResponse {
 
 class CouponService {
   async validateCoupon(data: CouponPayload): Promise<ValidateCouponResponse> {
-    const response = await apiClient<ValidateCouponResponse>('/coupons/validate', {
-      method: 'POST',
-      body: data,
-      auth: true,
-    });
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<ValidateCouponResponse>('/coupons/validate', { method: 'POST', body: data, auth: true });
     return response.data;
   }
 }

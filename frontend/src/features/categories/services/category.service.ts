@@ -1,6 +1,11 @@
 import { apiClient } from '@/services/api-client';
-import type { Category } from '@/features/categories/types/category';
+import type { Category } from '@/types/category';
 
+/**
+ * Category Service - Handles category API calls
+ * Note: Direct apiClient usage.
+ * @deprecated Prefer using useCategoryStore actions directly in components
+ */
 export const categoryService = {
   async getCategories() {
     const response = await apiClient<Category[]>('/categories', { auth: false });
@@ -40,4 +45,6 @@ export const categoryService = {
     return response.data;
   },
 };
+
+export type { Category };
 

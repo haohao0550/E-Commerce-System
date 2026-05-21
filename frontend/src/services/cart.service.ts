@@ -1,36 +1,11 @@
-import { apiClient } from './api-client';
+import { apiClient } from '@/services/api-client';
+import type { CartItem, CartResponse } from '@/types/cart';
 
-export interface CartItem {
-  id: string;
-  variantId: string;
-  quantity: number;
-  variant: {
-    id: string;
-    sku: string;
-    color: string | null;
-    size: string | null;
-    price: string | number;
-    stock: number;
-    product: {
-      id: string;
-      name: string;
-      slug: string;
-      images: string[];
-      basePrice: string | number;
-    };
-  };
-}
-
-export interface CartResponse {
-  items: CartItem[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
+/**
+ * Cart Service - Handles cart API calls
+ * Note: Direct apiClient usage. State management delegated to useCartStore (Zustand)
+ * @deprecated Prefer using useCartStore actions directly in components
+ */
 class CartService {
   async getCart(): Promise<CartResponse> {
     const response = await apiClient<CartResponse>('/carts', {
@@ -74,3 +49,4 @@ class CartService {
 }
 
 export const cartService = new CartService();
+export type { CartItem, CartResponse } from '@/types/cart';
