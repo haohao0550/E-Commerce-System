@@ -17,7 +17,7 @@ import {
   QrCode,
   DollarSign
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PageLoader } from '@/components/common/PageLoader';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +26,7 @@ import { useCart } from '@/context/CartContext';
 import { productService } from '@/features/products/services/product.service';
 import { orderService } from '@/features/orders/services/order.service';
 import { cartService } from '@/services/cart.service';
+import { ReviewSection } from '@/features/reviews/components/ReviewSection';
 import type { Product, ProductVariant } from '@/features/products/types/product';
 import { ROUTES } from '@/routes';
 
@@ -309,7 +310,7 @@ export default function UserProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
 
           {/* Left Column: Premium Gallery Showcase */}
-          <section className="lg:col-span-7 space-y-6">
+          <section className="lg:col-span-7 space-y-2">
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-surface-low border border-outline-variant/10">
               <img
                 src={images[activeImageIndex]}
@@ -621,7 +622,10 @@ export default function UserProductDetailPage() {
             </div>
 
           </section>
-
+        </div>
+          {/* ✅ Full-width, dưới grid */}
+        <div className="mt-20 pt-16 border-t border-outline-variant/20">
+          {product && <ReviewSection productId={product.id} productName={product.name} productImage={product.images?.[0]} />}
         </div>
       </main>
 

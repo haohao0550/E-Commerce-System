@@ -27,6 +27,10 @@ export class ApiClientError extends Error {
   }
 }
 
+// Track refresh token requests to prevent race conditions
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
 /**
  * Retrieve the active session JWT token from LocalStorage.
  * Safe to call in both SSR and Client-side environments.
@@ -51,9 +55,52 @@ export const clearAccessToken = () => {
 };
 
 /**
+ * Refresh the access token using the backend refresh endpoint.
+ * Handles concurrent refresh requests to prevent race conditions.
+ */
+const refreshAccessToken = async (): Promise<string | null> => {
+  // If already refreshing, wait for the existing refresh promise
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+
+  refreshPromise = (async () => {
+    try {
+      const response = await axios.post<ApiResponse<{ accessToken: string }>>(
+        `${API_BASE_URL}/auth/refresh`,
+        {},
+        { withCredentials: true },
+      );
+
+      const newToken = response.data?.data?.accessToken;
+      if (newToken) {
+        setAccessToken(newToken);
+        return newToken;
+      }
+      return null;
+    } catch (error) {
+      clearAccessToken();
+      // Redirect to login on refresh failure
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
+/**
  * Core API Client Wrapper using Axios.
  * Implements automated session token injection, cookie-based credentials,
- * custom FormData multipart headers bypass, and uniform error mapping.
+ * custom FormData multipart headers bypass, uniform error mapping,
+ * and automatic token refresh on 401 responses.
  */
 export const apiClient = async <T>(
   path: string,
@@ -98,7 +145,45 @@ export const apiClient = async <T>(
     // Map standard Axios errors into custom descriptive ApiClientError structure
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500;
+
+      // Handle 401 Unauthorized - attempt token refresh
+      if (status === 401 && options.auth !== false && typeof window !== 'undefined') {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          // Retry the original request with new token
+          headers['Authorization'] = `Bearer ${newToken}`;
+          try {
+            const retryResponse = await axios({
+              url: `${API_BASE_URL}${path}`,
+              method: options.method || 'GET',
+              headers,
+              data: options.body,
+              withCredentials: true,
+            });
+
+            const retryPayload = retryResponse.data as ApiResponse<T>;
+            if (!retryPayload) {
+              throw new ApiClientError('Invalid server response', retryResponse.status || 200);
+            }
+            return retryPayload;
+          } catch (retryError) {
+            if (axios.isAxiosError(retryError)) {
+              const retryStatus = retryError.response?.status || 500;
+              const retryPayload = retryError.response?.data as ApiResponse<T> | null;
+              throw new ApiClientError(
+                retryPayload?.message || retryError.message || 'Request failed',
+                retryStatus,
+                retryPayload?.error?.code,
+                retryPayload?.error?.details,
+              );
+            }
+            throw retryError;
+          }
+        }
+      }
+
       const payload = error.response?.data as ApiResponse<T> | null;
+      
       throw new ApiClientError(
         payload?.message || error.message || 'Request failed',
         status,

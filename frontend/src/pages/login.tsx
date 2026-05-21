@@ -1,6 +1,6 @@
 import { AuthRedirect } from '@/features/auth/components/AuthRedirect';
 import { LoginForm } from '@/features/auth/components/LoginForm';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   return (

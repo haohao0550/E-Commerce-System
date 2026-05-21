@@ -220,7 +220,7 @@ export default function AllProductsPage() {
                     <div className="relative flex items-center justify-center">
                       <input 
                         type="checkbox" 
-                        className="peer appearance-none w-5 h-5 border-2 border-outline-variant/50 roundedChecked checked:bg-black checked:border-black transition-all cursor-pointer"
+                        className="peer appearance-none w-5 h-5 border-2 border-outline-variant/50 rounded checked: checked:bg-black checked:border-black transition-all cursor-pointer"
                         checked={selectedCategories.includes(cat.id)}
                         onChange={() => toggleCategory(cat.id)}
                       />

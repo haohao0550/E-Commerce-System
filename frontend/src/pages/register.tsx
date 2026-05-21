@@ -1,6 +1,6 @@
 import { AuthRedirect } from '@/features/auth/components/AuthRedirect';
 import { RegisterForm } from '@/features/auth/components/RegisterForm';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export default function RegisterPage() {
   return (

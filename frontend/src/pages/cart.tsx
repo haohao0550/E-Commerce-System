@@ -175,6 +175,27 @@ export default function CartPage() {
       };
 
       const newOrder = await orderService.createOrder(orderPayload);
+
+      if (paymentMethod === 'momo') {
+        // Use central API store to call MoMo payment creation
+        const apiStore = (await import('@/store/apiStore')).useApiStore
+        const { callApi } = apiStore.getState()
+
+        const momoResponse = await callApi(`/payment/momo/create/${newOrder.id}`, {
+          method: 'POST',
+          body: { description: '' },
+          auth: true,
+        })
+
+        await refreshCart();
+
+        // redirect user to payUrl returned by backend
+        if (momoResponse?.data?.payUrl) {
+          window.location.href = momoResponse.data.payUrl as string
+          return
+        }
+      }
+
       setOrderSuccessId(newOrder.id);
       showToast('Order completed successfully!', 'success');
 
