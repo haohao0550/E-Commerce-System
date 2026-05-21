@@ -14,9 +14,11 @@ import {
     createOrderSchema,
     updateOrderSchema,
 } from './orders.schema.js';
+import { clearCache } from '@/shared/middlewares/cache.middleware.js';
 
 export const orderRoutes = Router();
 export const adminOrderRoutes = Router();
+const cacheKeys = ['dashboardTopProducts'];
 
 const ordersController = new OrdersController();
 
@@ -28,6 +30,7 @@ orderRoutes.post(
     requireRole('USER'),
     auditLog('order.createOrder'),
     validateBody(createOrderSchema),
+    clearCache(cacheKeys),
     asyncHandler(ordersController.createOrder),
 );
 
@@ -52,6 +55,7 @@ orderRoutes.patch(
     authenticate,
     auditLog('order.cancelOrder'),
     validateParams(orderIdSchema),
+    clearCache(cacheKeys),
     asyncHandler(ordersController.cancelOrder),
 );
 
@@ -76,6 +80,7 @@ adminOrderRoutes.patch(
     auditLog('admin.order.updateOrderStatus'),
     validateParams(orderIdSchema),
     validateBody(updateOrderSchema),
+    clearCache(cacheKeys),
     asyncHandler(ordersController.updateOrderStatus),
 );
 
@@ -84,5 +89,6 @@ adminOrderRoutes.patch(
     auditLog('admin.order.updatePaymentStatus'),
     validateParams(orderIdSchema),
     validateBody(updateOrderSchema),
+    clearCache(cacheKeys),
     asyncHandler(ordersController.updatePaymentStatus),
 );

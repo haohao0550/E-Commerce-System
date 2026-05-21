@@ -8,22 +8,23 @@ import {
 import { validateBody, validateParams } from '@/shared/middlewares/validate.middleware.js';
 import { requireRole, authenticate } from '@/shared/middlewares/authenticate.middlware.js';
 import { auditLog } from '@/shared/middlewares/audit-log.middleware.js';
-import { cacheMiddleware } from '@/shared/middlewares/cache.middleware.js';
+import { cacheMiddleware, clearCache } from '@/shared/middlewares/cache.middleware.js';
 
 const router = Router();
 const categoriesController = new CategoriesController();
+const cacheKeys = ['category', 'categorySlug', 'categoryById'];
 
 router.get(
     '/',
     auditLog('category.getAllCategories'),
-    cacheMiddleware('category:', 60),
+    cacheMiddleware('category', 60),
     categoriesController.getAll,
 );
 
 router.get(
     '/slug/:slug',
     auditLog('category.getBySlug'),
-    cacheMiddleware('categorySlug:', 60),
+    cacheMiddleware('categorySlug', 60),
     categoriesController.getBySlug,
 );
 
@@ -31,7 +32,7 @@ router.get(
     '/:id',
     auditLog('category.getById'),
     validateParams(categoryIdSchema),
-    cacheMiddleware('category:', 60),
+    cacheMiddleware('categoryById', 60),
     categoriesController.getById,
 );
 
@@ -41,6 +42,7 @@ router.post(
     requireRole('ADMIN'),
     auditLog('category.create'),
     validateBody(createCategorySchema),
+    clearCache(cacheKeys),
     categoriesController.create,
 );
 
@@ -51,6 +53,7 @@ router.patch(
     auditLog('category.update'),
     validateParams(categoryIdSchema),
     validateBody(updateCategorySchema),
+    clearCache(cacheKeys),
     categoriesController.update,
 );
 
@@ -60,6 +63,7 @@ router.delete(
     requireRole('ADMIN'),
     auditLog('category.delete'),
     validateParams(categoryIdSchema),
+    clearCache(cacheKeys),
     categoriesController.delete,
 );
 
