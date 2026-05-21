@@ -72,12 +72,12 @@ export const UserTable = ({
         <table className="w-full text-left border-collapse">
           {/* Table Header */}
           <thead>
-            <tr className="bg-brand-primary text-brand-on-primary">
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">User Profile</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Phone</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Role</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest">Status</th>
-              <th className="py-5 px-8 text-xs font-black uppercase tracking-widest text-right">Actions</th>
+            <tr className="bg-black [&>th]:!text-white [&>th]:!font-black">
+              <th className="py-5 px-8 text-xs uppercase tracking-widest">User Profile</th>
+              <th className="py-5 px-8 text-xs uppercase tracking-widest">Phone</th>
+              <th className="py-5 px-8 text-xs uppercase tracking-widest">Role</th>
+              <th className="py-5 px-8 text-xs uppercase tracking-widest">Status</th>
+              <th className="py-5 px-8 text-xs uppercase tracking-widest text-right">Actions</th>
             </tr>
           </thead>
 
@@ -134,13 +134,14 @@ export const UserTable = ({
                     </td>
 
                     {/* Status Badge Column */}
-                    <td className="py-5 px-8">
-                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
-                        status === 'Active' 
-                          ? 'bg-brand-primary text-brand-on-primary border-brand-primary shadow-sm' 
-                          : 'bg-red-50 text-red-600 border-red-200'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${status === 'Active' ? 'bg-white blink' : 'bg-red-500'}`} />
+                    <td className="py-5 px-8 text-center align-middle">
+                      <span
+                        className={`text-xs font-black uppercase tracking-widest ${
+                          status === 'Active'
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                        }`}
+                      >
                         {status}
                       </span>
                     </td>

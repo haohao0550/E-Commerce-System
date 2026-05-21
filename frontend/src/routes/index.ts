@@ -11,6 +11,7 @@ export const ROUTES = {
   cart: '/cart',
   paymentResult: '/payment-result',
   adminOrders: '/admin/orders',
+  adminCoupons: '/admin/coupons',
 } as const;
 
 
