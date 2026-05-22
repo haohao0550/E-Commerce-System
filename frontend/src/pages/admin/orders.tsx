@@ -25,6 +25,7 @@ export default function AdminOrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState<Order['paymentStatus'] | ''>('');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [originalOrder, setOriginalOrder] = useState<Order | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -65,6 +66,7 @@ export default function AdminOrdersPage() {
     try {
       const order = await adminOrderService.getOrderById(orderId);
       setSelectedOrder(order);
+      setOriginalOrder(order);
     } catch (err) {
       console.error('Error fetching order detail:', err);
       showToast('Failed to load order detail', 'error');
@@ -76,20 +78,34 @@ export default function AdminOrdersPage() {
   const closeOrderDetail = () => {
     setSelectedOrderId(null);
     setSelectedOrder(null);
+    setOriginalOrder(null);
   };
 
-  const handleUpdateStatus = async (payload: { status?: Order['status']; paymentStatus?: Order['paymentStatus'] }) => {
-    if (!selectedOrder) return;
+  const handleUpdateStatus = async () => {
+    if (!selectedOrder || !originalOrder) return;
     try {
       setUpdatingStatus(true);
       let updated = selectedOrder;
-      if (payload.status && payload.status !== selectedOrder.status) {
-        updated = await adminOrderService.updateOrderStatus(selectedOrder.id, payload.status);
+      
+      // Only call updateOrderStatus if status changed
+      if (selectedOrder.status !== originalOrder.status) {
+        updated = await adminOrderService.updateOrderStatus(selectedOrder.id, selectedOrder.status);
       }
-      if (payload.paymentStatus && payload.paymentStatus !== selectedOrder.paymentStatus) {
-        updated = await adminOrderService.updatePaymentStatus(updated.id, payload.paymentStatus);
+      
+      // Only call updatePaymentStatus if paymentStatus changed
+      if (selectedOrder.paymentStatus !== originalOrder.paymentStatus) {
+        updated = await adminOrderService.updatePaymentStatus(updated.id, selectedOrder.paymentStatus);
       }
+      
+      // If nothing changed, show info message
+      if (selectedOrder.status === originalOrder.status && selectedOrder.paymentStatus === originalOrder.paymentStatus) {
+        showToast('No changes made', 'info');
+        setUpdatingStatus(false);
+        return;
+      }
+      
       setSelectedOrder(updated);
+      setOriginalOrder(updated);
       setOrders((prev) => prev.map((order) => (order.id === updated.id ? updated : order)));
       showToast('Order updated successfully', 'success');
     } catch (err) {
@@ -406,7 +422,7 @@ export default function AdminOrdersPage() {
                 <button
                   type="button"
                   disabled={updatingStatus}
-                  onClick={() => void handleUpdateStatus({ status: selectedOrder.status, paymentStatus: selectedOrder.paymentStatus })}
+                  onClick={() => void handleUpdateStatus()}
                   className="w-full bg-brand-primary text-brand-on-primary rounded-xl py-3 text-sm font-extrabold uppercase tracking-wider"
                 >
                   {updatingStatus ? 'Updating...' : 'Update Order'}

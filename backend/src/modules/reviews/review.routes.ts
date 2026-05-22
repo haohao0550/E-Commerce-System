@@ -29,7 +29,7 @@ reviewRoutes.get(
     auditLog('review.getProductReviews'),
     validateParams(productIdParamSchema),
     validateQuery(getProductReviewsQuerySchema),
-    cacheMiddleware('productReviewsByProductId', 60),
+    cacheMiddleware((req) => `productReviewsByProductId:${req.params.productId}`, 60),
     asyncHandler(reviewController.getProductReviews.bind(reviewController)),
 );
 

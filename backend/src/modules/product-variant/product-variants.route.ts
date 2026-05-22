@@ -32,7 +32,7 @@ productVariantsRoute.get(
     '/products/:productId/variants',
     auditLog('GET_PRODUCT_VARIANTS_BY_PRODUCT_ID'),
     validateParams(productIdSchema),
-    cacheMiddleware('productVariantsByProductId', 60),
+    cacheMiddleware((req) => `productVariantsByProductId:${req.params.productId}`, 60),
     productVariantsController.getByProductId,
 );
 
@@ -40,7 +40,7 @@ productVariantsRoute.get(
     '/variants/:id',
     auditLog('GET_PRODUCT_VARIANT_BY_ID'),
     validateParams(productVariantIdSchema),
-    cacheMiddleware('productVariantById', 60),
+    cacheMiddleware((req) => `productVariantById:${req.params.id}`, 60),
     productVariantsController.getById,
 );
 
