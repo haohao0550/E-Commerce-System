@@ -9,6 +9,7 @@ import { ROUTES } from '@/routes';
 import type { Order } from '@/features/orders/services/order.service';
 import { Calendar, Eye, PackageSearch, RefreshCw, ChevronDown, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { formatMoney } from '@/utils/format';
 
 const statusOptions: Order['status'][] = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED'];
 const paymentStatusOptions: Order['paymentStatus'][] = ['UNPAID', 'PAID', 'FAILED', 'REFUNDED'];
@@ -29,10 +30,7 @@ export default function AdminOrdersPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const ordersPerPage = 10;
-
-  const formatCurrency = (value: number) => {
-    return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value)} vnđ`;
-  };
+  const formatCurrency = formatMoney;
 
   const fetchOrders = useCallback(async () => {
     setIsLoadingOrders(true);

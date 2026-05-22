@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -15,7 +15,8 @@ import {
   X,
   CreditCard,
   QrCode,
-  DollarSign
+  DollarSign,
+  TicketPercent
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageLoader } from '@/components/common/PageLoader';
@@ -25,9 +26,11 @@ import { useAddress } from '@/context/AddressContext';
 import { useCart } from '@/context/CartContext';
 import { productService } from '@/features/products/services/product.service';
 import { orderService } from '@/features/orders/services/order.service';
+import { couponService, ValidateCouponResponse } from '@/features/coupons/services/coupon.service';
 import { cartService } from '@/services/cart.service';
 import { ReviewSection } from '@/features/reviews/components/ReviewSection';
 import type { Product, ProductVariant } from '@/features/products/types/product';
+import type { Coupon } from '@/types/coupon';
 import { ROUTES } from '@/routes';
 import { formatMoney } from '@/utils/format';
 
@@ -64,6 +67,14 @@ export default function UserProductDetailPage() {
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY' | 'MOMO'>('COD');
   const [note, setNote] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [validatedCoupon, setValidatedCoupon] = useState<ValidateCouponResponse | null>(null);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
+  const [showAllCoupons, setShowAllCoupons] = useState(false);
 
   // Accordion active sections
   const [expandedSection, setExpandedSection] = useState<'desc' | 'shipping' | null>('desc');
@@ -86,6 +97,66 @@ export default function UserProductDetailPage() {
       }
     }
   }, [isCheckoutOpen, user, addresses]);
+
+  const checkoutSubtotal = selectedVariant ? Number(selectedVariant.price) * quantity : 0;
+  const checkoutDiscount = validatedCoupon?.discountAmount ?? 0;
+  const checkoutTotal = Math.max(checkoutSubtotal - checkoutDiscount, 0);
+
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+
+    let isMounted = true;
+
+    const loadCoupons = async () => {
+      setIsLoadingCoupons(true);
+      try {
+        const data = await couponService.getCoupons({ page: 1, limit: 100, isActive: true });
+        if (isMounted) {
+          setAvailableCoupons(data.coupons || []);
+        }
+      } catch {
+        if (isMounted) {
+          setAvailableCoupons([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingCoupons(false);
+        }
+      }
+    };
+
+    loadCoupons();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isCheckoutOpen]);
+
+  const eligibleCoupons = useMemo(() => {
+    const now = Date.now();
+
+    return availableCoupons
+      .filter((coupon) => {
+        const hasUsageLeft = coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit;
+        const hasNotExpired = !coupon.expiresAt || new Date(coupon.expiresAt).getTime() >= now;
+        const meetsMinimum = coupon.minOrderValue == null || checkoutSubtotal >= coupon.minOrderValue;
+
+        return coupon.isActive && hasUsageLeft && hasNotExpired && meetsMinimum;
+      })
+      .sort((a, b) => {
+        const discountA = Math.min((checkoutSubtotal * a.discount) / 100, a.maxDiscount ?? Number.POSITIVE_INFINITY);
+        const discountB = Math.min((checkoutSubtotal * b.discount) / 100, b.maxDiscount ?? Number.POSITIVE_INFINITY);
+        return discountB - discountA;
+      });
+  }, [availableCoupons, checkoutSubtotal]);
+
+  useEffect(() => {
+    if (validatedCoupon && validatedCoupon.orderValue !== checkoutSubtotal) {
+      setValidatedCoupon(null);
+      setCouponSuccess(null);
+      setCouponError('Product quantity changed. Please reapply your coupon.');
+    }
+  }, [checkoutSubtotal, validatedCoupon]);
 
   // --- Fetch Product Detail ---
   useEffect(() => {
@@ -207,6 +278,53 @@ export default function UserProductDetailPage() {
     setIsCheckoutOpen(true);
   };
 
+  const handleApplyCoupon = async (codeOverride?: string) => {
+    const trimmedCode = (codeOverride ?? couponCode).trim();
+
+    if (!trimmedCode) {
+      setCouponError('Please enter a coupon code');
+      setCouponSuccess(null);
+      setValidatedCoupon(null);
+      return;
+    }
+
+    setCouponCode(trimmedCode);
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+    setCouponSuccess(null);
+
+    try {
+      const result = await couponService.validateCoupon({ code: trimmedCode, orderValue: checkoutSubtotal });
+      setValidatedCoupon(result);
+      setCouponSuccess(`Coupon ${result.coupon.code} applied successfully`);
+    } catch (err: any) {
+      setValidatedCoupon(null);
+      setCouponError(err?.message || 'Failed to apply coupon');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setValidatedCoupon(null);
+    setCouponSuccess(null);
+    setCouponError(null);
+  };
+
+  const getCouponDiscountAmount = (coupon: Coupon) => {
+    const rawDiscount = (checkoutSubtotal * coupon.discount) / 100;
+    return Math.min(rawDiscount, coupon.maxDiscount ?? rawDiscount);
+  };
+
+  const formatCouponExpiry = (expiresAt: string | null) => {
+    if (!expiresAt) return 'No expiry';
+    return new Date(expiresAt).toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -248,7 +366,8 @@ export default function UserProductDetailPage() {
             variantId: selectedVariant.id,
             quantity,
           }
-        ]
+        ],
+        couponId: validatedCoupon?.coupon.id,
       };
 
       const newOrder = await orderService.createOrder(orderPayload);
@@ -632,8 +751,8 @@ export default function UserProductDetailPage() {
                       className="overflow-hidden"
                     >
                       <div className="px-5 pb-5 pt-1 text-sm text-gray-600 leading-relaxed font-medium space-y-2">
-                        <p>📦 <strong>Standard Ground:</strong> Free delivery on all orders above $100. Fulfilled in 3-5 business days.</p>
-                        <p>🚀 <strong>Express Courier:</strong> Overnight dispatch available at checkout for a flat-fee of $15.</p>
+                        <p>Standard Ground: Free delivery on all orders above 100.000 đ. Fulfilled in 3-5 business days.</p>
+                        <p>Express Courier: Overnight dispatch available at checkout for a flat fee of 15.000 đ.</p>
                         <p>🔄 <strong>No-Hassle Returns:</strong> Return requests accepted inside 30 days from dispatch date. Sneakers must remain completely unworn with tag wrappers intact.</p>
                       </div>
                     </motion.div>
@@ -719,7 +838,7 @@ export default function UserProductDetailPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-on-surface-variant">Total Price:</span>
-                        <span className="font-bold text-black">${(displayPrice * quantity).toFixed(2)}</span>
+                        <span className="font-bold text-black">{formatMoney(checkoutTotal)}</span>
                       </div>
                     </div>
 
@@ -900,6 +1019,129 @@ export default function UserProductDetailPage() {
                       />
                     </div>
 
+                    {/* Coupon Selector */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-black border-b border-outline-variant/20 pb-2 flex items-center gap-2">
+                        <TicketPercent className="h-4 w-4" />
+                        3. Coupon
+                      </h4>
+
+                      <div className="flex gap-2">
+                        <input
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          placeholder="Enter coupon code"
+                          className="min-w-0 flex-1 border border-outline-variant/40 rounded-lg px-3 py-2 text-sm bg-surface-lowest focus:outline-none focus:border-black font-semibold text-black"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleApplyCoupon()}
+                          disabled={isValidatingCoupon || checkoutSubtotal === 0}
+                          className={`rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${isValidatingCoupon || checkoutSubtotal === 0
+                              ? 'bg-outline/40 text-on-surface-variant cursor-not-allowed'
+                              : 'bg-black text-white hover:bg-black/90'
+                            }`}
+                        >
+                          {isValidatingCoupon ? 'Applying' : 'Apply'}
+                        </button>
+                      </div>
+
+                      {isLoadingCoupons ? (
+                        <div className="rounded-xl border border-outline-variant/20 bg-surface-lowest px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">
+                          Loading coupons...
+                        </div>
+                      ) : eligibleCoupons.length > 0 ? (
+                        <div className="space-y-2">
+                          {(showAllCoupons ? eligibleCoupons : eligibleCoupons.slice(0, 2)).map((coupon) => {
+                            const isSelected = validatedCoupon?.coupon.id === coupon.id;
+                            const estimatedDiscount = getCouponDiscountAmount(coupon);
+
+                            return (
+                              <button
+                                key={coupon.id}
+                                type="button"
+                                onClick={() => handleApplyCoupon(coupon.code)}
+                                disabled={isValidatingCoupon}
+                                className={`group relative flex min-h-[92px] w-full overflow-hidden rounded-xl border text-left shadow-sm transition-all hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70 ${isSelected
+                                    ? 'border-emerald-300 bg-emerald-50'
+                                    : 'border-outline-variant/30 bg-white'
+                                  }`}
+                              >
+                                <div className="relative flex w-20 shrink-0 flex-col items-center justify-center bg-[#f58220] text-black">
+                                  <span className="font-heading text-xl font-black leading-none">{coupon.discount}%</span>
+                                  <span className="mt-1 text-[9px] font-black uppercase tracking-[0.16em]">Off</span>
+                                  <span className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-surface-lowest" />
+                                  <span className="absolute -bottom-3 -right-3 h-6 w-6 rounded-full bg-surface-lowest" />
+                                </div>
+                                <div className="border-r border-dashed border-outline-variant/60" />
+                                <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
+                                  <div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="rounded bg-[#ffdcc6] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#964900]">
+                                        Limited time
+                                      </span>
+                                      {isSelected && (
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">
+                                          Applied
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="mt-2 truncate font-heading text-sm font-black uppercase tracking-tight text-black">
+                                      {coupon.code}
+                                    </p>
+                                    <p className="text-[11px] font-semibold text-on-surface-variant">
+                                      Save {formatMoney(estimatedDiscount)}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-end justify-between gap-2">
+                                    <span className="text-[10px] font-semibold text-on-surface-variant/60">
+                                      Expires: {formatCouponExpiry(coupon.expiresAt)}
+                                    </span>
+                                    <span className="rounded-lg bg-black px-2.5 py-1.5 text-[9px] font-black uppercase tracking-widest text-white group-hover:bg-[#964900]">
+                                      Use
+                                    </span>
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+
+                          {eligibleCoupons.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => setShowAllCoupons((current) => !current)}
+                              className="w-full rounded-xl border border-outline-variant/30 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black transition-colors hover:border-black"
+                            >
+                              {showAllCoupons ? 'Show less' : `View all coupons (${eligibleCoupons.length})`}
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-outline-variant/30 bg-white/60 px-4 py-3 text-xs font-semibold text-on-surface-variant/70">
+                          No coupon matches this item yet.
+                        </div>
+                      )}
+
+                      {couponError && (
+                        <p className="text-xs text-red-600 font-bold">{couponError}</p>
+                      )}
+
+                      {couponSuccess && !couponError && (
+                        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-bold">{couponSuccess}</span>
+                            <button
+                              type="button"
+                              onClick={handleRemoveCoupon}
+                              className="font-black uppercase tracking-widest text-[9px] text-emerald-900/80 hover:text-emerald-900"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Form validation alert */}
                     {formError && (
                       <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg text-xs font-bold uppercase tracking-wide">
@@ -912,15 +1154,21 @@ export default function UserProductDetailPage() {
                     <div className="pt-4 border-t border-outline-variant/20 space-y-2 text-xs font-semibold text-on-surface-variant">
                       <div className="flex justify-between text-sm">
                         <span>Items Subtotal</span>
-                        <span className="text-black font-mono mt-2">{formatMoney(displayPrice * quantity)}</span>
+                        <span className="text-black font-mono">{formatMoney(checkoutSubtotal)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Shipping Courier Fee</span>
                         <span className="text-black font-bold uppercase">FREE</span>
                       </div>
+                      {validatedCoupon && (
+                        <div className="flex justify-between text-emerald-700">
+                          <span>Coupon Discount</span>
+                          <span className="font-mono font-bold">-{formatMoney(checkoutDiscount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between pt-2 text-sm font-black text-black border-t border-dashed border-outline-variant/20">
                         <span>Final Price</span>
-                        <span className="font-mono text-base">{formatMoney(displayPrice * quantity)}</span>
+                        <span className="font-mono text-base">{formatMoney(checkoutTotal)}</span>
                       </div>
                     </div>
 

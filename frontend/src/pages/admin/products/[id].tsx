@@ -30,6 +30,7 @@ import { categoryService } from '@/features/categories/services/category.service
 import { ROUTES } from '@/routes';
 import type { Product, ProductVariant } from '@/features/products/types/product';
 import type { Category } from '@/features/categories/types/category';
+import { formatMoney } from '@/utils/format';
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -48,11 +49,7 @@ export default function AdminProductDetailPage() {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
 
-  const formatCurrency = (value: number) => {
-    return `${new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: 0,
-    }).format(value)} vnd`;
-  };
+  const formatCurrency = formatMoney;
 
   // --- Fetch Product Detail ---
   const fetchProduct = async (productId: string) => {

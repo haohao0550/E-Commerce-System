@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ShieldCheck,
   ShoppingBag,
+  TicketPercent,
   Trash2,
   X
 } from 'lucide-react';
@@ -31,6 +32,7 @@ import { cartService, CartItem } from '@/services/cart.service';
 import { couponService, ValidateCouponResponse } from '@/features/coupons/services/coupon.service';
 import { orderService } from '@/features/orders/services/order.service';
 import { ROUTES } from '@/routes';
+import type { Coupon } from '@/types/coupon';
 import { formatMoney } from '@/utils/format';
 
 // --- Components ---
@@ -52,6 +54,9 @@ export default function CartPage() {
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [validatedCoupon, setValidatedCoupon] = useState<ValidateCouponResponse | null>(null);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
+  const [showAllCoupons, setShowAllCoupons] = useState(false);
 
   const defaultImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2670&auto=format&fit=crop';
 
@@ -90,8 +95,8 @@ export default function CartPage() {
     }
   };
 
-  const handleApplyCoupon = async () => {
-    const trimmedCode = couponCode.trim();
+  const handleApplyCoupon = async (codeOverride?: string) => {
+    const trimmedCode = (codeOverride ?? couponCode).trim();
     if (!trimmedCode) {
       setCouponError('Please enter a coupon code');
       setCouponSuccess(null);
@@ -99,6 +104,7 @@ export default function CartPage() {
       return;
     }
 
+    setCouponCode(trimmedCode);
     setIsValidatingCoupon(true);
     setCouponError(null);
     setCouponSuccess(null);
@@ -117,6 +123,7 @@ export default function CartPage() {
 
   const handleRemoveCoupon = () => {
     setValidatedCoupon(null);
+    setCouponCode('');
     setCouponSuccess(null);
     setCouponError(null);
   };
@@ -127,7 +134,51 @@ export default function CartPage() {
   const discountAmount = validatedCoupon?.discountAmount ?? 0;
   const total = Math.max(subtotal + shipping - discountAmount, 0);
 
-  const isVnd = subtotal > 10000 || cartItems.some(item => Number(item.variant.price) > 10000);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCoupons = async () => {
+      setIsLoadingCoupons(true);
+      try {
+        const data = await couponService.getCoupons({ page: 1, limit: 100, isActive: true });
+        if (isMounted) {
+          setAvailableCoupons(data.coupons || []);
+        }
+      } catch {
+        if (isMounted) {
+          setAvailableCoupons([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingCoupons(false);
+        }
+      }
+    };
+
+    loadCoupons();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const eligibleCoupons = useMemo(() => {
+    const now = Date.now();
+
+    return availableCoupons
+      .filter((coupon) => {
+        const hasUsageLeft = coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit;
+        const hasNotExpired = !coupon.expiresAt || new Date(coupon.expiresAt).getTime() >= now;
+        const meetsMinimum = coupon.minOrderValue == null || subtotal >= coupon.minOrderValue;
+
+        return coupon.isActive && hasUsageLeft && hasNotExpired && meetsMinimum;
+      })
+      .sort((a, b) => {
+        const discountA = Math.min((subtotal * a.discount) / 100, a.maxDiscount ?? Number.POSITIVE_INFINITY);
+        const discountB = Math.min((subtotal * b.discount) / 100, b.maxDiscount ?? Number.POSITIVE_INFINITY);
+        return discountB - discountA;
+      });
+  }, [availableCoupons, subtotal]);
 
   useEffect(() => {
     if (validatedCoupon && validatedCoupon.orderValue !== subtotal) {
@@ -138,10 +189,21 @@ export default function CartPage() {
   }, [subtotal, validatedCoupon]);
 
   const formatPrice = (price: number) => {
-    if (isVnd) {
-      return `${price.toLocaleString('vi-VN')}`;
-    }
-    return `$${price.toFixed(2)}`;
+    return formatMoney(price);
+  };
+
+  const formatCouponExpiry = (expiresAt: string | null) => {
+    if (!expiresAt) return 'No expiry';
+    return new Date(expiresAt).toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const getCouponDiscountAmount = (coupon: Coupon) => {
+    const rawDiscount = (subtotal * coupon.discount) / 100;
+    return Math.min(rawDiscount, coupon.maxDiscount ?? rawDiscount);
   };
 
   // --- Complete Order placement ---
@@ -496,7 +558,7 @@ export default function CartPage() {
                 />
                 <button
                   type="button"
-                  onClick={handleApplyCoupon}
+                  onClick={() => handleApplyCoupon()}
                   disabled={isValidatingCoupon || subtotal === 0}
                   className={`rounded-xl px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${isValidatingCoupon || subtotal === 0
                     ? 'bg-outline/50 text-on-surface-variant cursor-not-allowed'
@@ -507,34 +569,132 @@ export default function CartPage() {
                 </button>
               </div>
 
+              {validatedCoupon && (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-heading text-sm font-black uppercase tracking-wider text-emerald-950">
+                        {validatedCoupon.coupon.code}
+                      </p>
+                      <p className="text-xs font-semibold text-emerald-800">
+                        Discount {formatMoney(validatedCoupon.discountAmount)}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-white text-emerald-900 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                    aria-label="Remove applied coupon"
+                    title="Remove applied coupon"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-on-surface-variant">
+                    <TicketPercent className="h-4 w-4 text-black" />
+                    Available coupons
+                  </div>
+                  {eligibleCoupons.length > 0 && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">
+                      Tap to apply
+                    </span>
+                  )}
+                </div>
+
+                {isLoadingCoupons ? (
+                  <div className="rounded-xl border border-outline-variant/20 bg-white/60 px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant/60">
+                    Loading coupons...
+                  </div>
+                ) : eligibleCoupons.length > 0 ? (
+                  <div className="space-y-3">
+                    {(showAllCoupons ? eligibleCoupons : eligibleCoupons.slice(0, 2)).map((coupon) => {
+                      const isSelected = validatedCoupon?.coupon.id === coupon.id;
+                      const estimatedDiscount = getCouponDiscountAmount(coupon);
+
+                      return (
+                        <button
+                          key={coupon.id}
+                          type="button"
+                          onClick={() => handleApplyCoupon(coupon.code)}
+                          disabled={isValidatingCoupon}
+                          className={`group relative flex min-h-[112px] w-full overflow-hidden rounded-2xl border text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md disabled:cursor-wait disabled:opacity-70 ${isSelected
+                            ? 'border-emerald-300 bg-emerald-50 ring-1 ring-emerald-200'
+                            : 'border-outline-variant/30 bg-white'
+                          }`}
+                        >
+                          <div className={`relative flex w-24 shrink-0 flex-col items-center justify-center text-black ${isSelected ? 'bg-emerald-200' : 'bg-[#f58220]'}`}>
+                            <span className="font-heading text-2xl font-black leading-none">{coupon.discount}%</span>
+                            <span className="mt-1 text-[10px] font-black uppercase tracking-[0.18em]">Off</span>
+                            <span className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-surface-container" />
+                            <span className="absolute -bottom-3 -right-3 h-6 w-6 rounded-full bg-surface-container" />
+                          </div>
+                          <div className="border-r border-dashed border-outline-variant/60" />
+                          <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-3">
+                                <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${isSelected ? 'bg-white text-emerald-700' : 'bg-[#ffdcc6] text-[#964900]'}`}>
+                                  Limited time
+                                </span>
+                                {isSelected && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Applied
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="truncate font-heading text-lg font-black uppercase tracking-tight text-black">
+                                  {coupon.code}
+                                </p>
+                                <p className="text-xs font-semibold text-on-surface-variant">
+                                  Save {formatPrice(estimatedDiscount)}
+                                  {coupon.maxDiscount ? `, max ${formatPrice(coupon.maxDiscount)}` : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-end justify-between gap-3">
+                              <span className="text-[11px] font-semibold text-on-surface-variant/60">
+                                Expires: {formatCouponExpiry(coupon.expiresAt)}
+                              </span>
+                              <span className={`rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${isSelected ? 'bg-emerald-700 text-white' : 'bg-black text-white group-hover:bg-[#964900]'}`}>
+                                {isSelected ? 'Selected' : 'Use code'}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {eligibleCoupons.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllCoupons((current) => !current)}
+                        className="w-full rounded-xl border border-outline-variant/30 bg-white px-4 py-3 text-[11px] font-black uppercase tracking-widest text-black transition-colors hover:border-black"
+                      >
+                        {showAllCoupons ? 'Show less' : `View all coupons (${eligibleCoupons.length})`}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-outline-variant/30 bg-white/50 px-4 py-3 text-xs font-semibold text-on-surface-variant/70">
+                    No coupon matches this cart yet.
+                  </div>
+                )}
+              </div>
+
               {couponError && (
                 <p className="text-sm text-red-600 font-medium">{couponError}</p>
               )}
 
-              {couponSuccess && !couponError && (
+              {couponSuccess && !couponError && !validatedCoupon && (
                 <p className="text-sm text-emerald-600 font-medium">{couponSuccess}</p>
-              )}
-
-              {validatedCoupon && (
-                <div className="rounded-3xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="font-bold uppercase tracking-widest mt-1">{validatedCoupon.coupon.code}</p>
-                      <p className="text-sm text-emerald-800 mt-1">Discount applied to order</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCoupon}
-                      className="text-[10px] font-black bg-red-600 text-white uppercase tracking-widest px-3 py-1 rounded hover:bg-red-700 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="mt-3 flex justify-between text-sm">
-                    <span>Discount</span>
-                    <span className="font-bold font-heading">{formatMoney(validatedCoupon.discountAmount)}</span>
-                  </div>
-                </div>
               )}
             </div>
 

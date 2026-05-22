@@ -35,6 +35,7 @@ import type {
   RevenuePoint,
   OrderCountPoint,
 } from '@/features/dashboards/types/dashboard';
+import { formatCompactMoney, formatMoney } from '@/utils/format';
 
 /**
  * AdminDashboardPage Component
@@ -95,11 +96,7 @@ export default function AdminDashboardPage() {
     void loadDashboardData();
   }, [user, showToast]);
 
-  const formatCurrency = (value: number) => {
-    return `${new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: 0,
-    }).format(value)} vnd`;
-  };
+  const formatCurrency = formatMoney;
 
 
   const revenueChartData = revenueData.map((item) => ({
@@ -566,7 +563,7 @@ export default function AdminDashboardPage() {
                             <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                             <YAxis
                               tick={{ fontSize: 11 }}
-                              tickFormatter={(value) => formatCurrency(Number(value)).slice(0, -8) + 'K'}
+                              tickFormatter={(value) => formatCompactMoney(Number(value))}
                             />
                             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                             <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
@@ -577,7 +574,7 @@ export default function AdminDashboardPage() {
                             <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                             <YAxis
                               tick={{ fontSize: 11 }}
-                              tickFormatter={(value) => formatCurrency(Number(value)).slice(0, -8) + 'K'}
+                              tickFormatter={(value) => formatCompactMoney(Number(value))}
                             />
                             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                             <Line

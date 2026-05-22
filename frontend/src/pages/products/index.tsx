@@ -84,13 +84,6 @@ export default function AllProductsPage() {
     }
   }, [products, maxSliderValue]);
 
-  const formatPrice = (price: number) => {
-    if (isVnd) {
-      return `${price.toLocaleString('vi-VN')} $`;
-    }
-    return `$${price.toFixed(2)}`;
-  };
-
   // --- Handlers ---
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories(prev => 

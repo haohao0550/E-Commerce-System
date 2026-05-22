@@ -1,6 +1,7 @@
 import { Edit, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { Product } from '@/features/products/types/product';
+import { formatMoney } from '@/utils/format';
 
 interface ProductTableProps {
   products: Product[];
@@ -23,12 +24,6 @@ export const ProductTable = ({
   onRowClick,
 }: ProductTableProps) => {
   const defaultImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2670&auto=format&fit=crop';
-  const formatCurrency = (value: number) => {
-    return `${new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: 0,
-    }).format(value)} vnd`;
-  };
-
   // --- Shimmer Skeleton Loader ---
   if (isLoading) {
     return (
@@ -132,7 +127,7 @@ export const ProductTable = ({
                     {/* Column 3: Price */}
                     <td className="py-4 px-6">
                       <span className="text-base font-black text-on-surface font-mono">
-                        {formatCurrency(Number(product.basePrice))}
+                        {formatMoney(Number(product.basePrice))}
                       </span>
                     </td>
 

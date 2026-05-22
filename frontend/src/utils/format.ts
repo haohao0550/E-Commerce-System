@@ -8,5 +8,27 @@ export const formatMoney = (
 ) => {
   const value = Number(amount || 0);
 
-  return `${value.toLocaleString('vi-VN')} ${currency}`;
+  return `${new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 0,
+  }).format(value)} ${currency}`;
+};
+
+export const formatCompactMoney = (amount: number | string) => {
+  const value = Number(amount || 0);
+
+  if (Math.abs(value) >= 1_000_000) {
+    return `${new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 1,
+    }).format(value / 1_000_000)}tr`;
+  }
+
+  if (Math.abs(value) >= 1_000) {
+    return `${new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 0,
+    }).format(value / 1_000)}K`;
+  }
+
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 0,
+  }).format(value);
 };

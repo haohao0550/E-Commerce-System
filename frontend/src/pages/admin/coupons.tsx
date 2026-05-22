@@ -9,6 +9,7 @@ import { ROUTES } from '@/routes';
 import type { Coupon, CreateCouponPayload } from '@/types/coupon';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { formatMoney } from '@/utils/format';
 
 export default function AdminCouponsPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -31,10 +32,7 @@ export default function AdminCouponsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const couponsPerPage = 10;
-
-  const formatCurrency = (value: number) => {
-    return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value)} vnđ`;
-  };
+  const formatCurrency = formatMoney;
 
   const resetForm = () => {
     setCode('');
