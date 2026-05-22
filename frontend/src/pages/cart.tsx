@@ -46,7 +46,7 @@ export default function CartPage() {
 
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'momo'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'momo' | 'stripe'>('cod');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderSuccessId, setOrderSuccessId] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState('');
@@ -222,7 +222,7 @@ export default function CartPage() {
     setIsPlacingOrder(true);
     try {
       const orderPayload = {
-        paymentMethod: paymentMethod.toUpperCase() as 'COD' | 'VNPAY' | 'MOMO',
+        paymentMethod: paymentMethod.toUpperCase() as 'COD' | 'MOMO' | 'STRIPE',
         shippingAddress: {
           fullName: selectedAddress.fullName,
           phone: selectedAddress.phone,
@@ -256,6 +256,16 @@ export default function CartPage() {
         if (momoResponse?.data?.payUrl) {
           window.location.href = momoResponse.data.payUrl as string
           return
+        }
+      }
+
+      if (paymentMethod === 'stripe') {
+        const stripeResponse = await orderService.createStripePayment(newOrder.id, 'Order payment');
+        await refreshCart();
+
+        if (stripeResponse?.checkoutUrl) {
+          window.location.href = stripeResponse.checkoutUrl;
+          return;
         }
       }
 
@@ -451,6 +461,7 @@ export default function CartPage() {
               {[
                 { id: 'cod', label: 'Cash on Delivery (COD)', icon: Wallet },
                 { id: 'momo', label: 'MOMO e-Wallet', icon: QrCode },
+                { id: 'stripe', label: 'STRIPE credit card', icon: CreditCard },
               ].map((item) => (
                 <button
                   key={item.id}

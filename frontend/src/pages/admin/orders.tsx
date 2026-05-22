@@ -254,7 +254,7 @@ export default function AdminOrdersPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-black [&>th]:!text-white [&>th]:!font-black">
+                  <tr className="bg-black [&>th]:text-white! [&>th]:font-black!">
                     <th className="py-5 px-6 text-xs uppercase tracking-widest">User</th>
                     <th className="py-5 px-6 text-xs uppercase tracking-widest">Status</th>
                     <th className="py-5 px-6 text-xs uppercase tracking-widest">Payment</th>

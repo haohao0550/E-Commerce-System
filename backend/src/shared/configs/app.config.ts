@@ -32,6 +32,12 @@ const envSchema = zod.object({
     MOMO_IPN_URL: requiredString,
     MOMO_PARTNER_NAME: zod.string().trim().default('Mini Ecommerce'),
     MOMO_STORE_ID: zod.string().trim().default('Mini Ecommerce'),
+
+    STRIPE_SECRET_KEY: requiredString,
+    STRIPE_WEBHOOK_SECRET: requiredString,
+    STRIPE_SUCCESS_URL: requiredString,
+    STRIPE_CANCEL_URL: requiredString,
+    STRIPE_CURRENCY: zod.string().trim().default('vnd')
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

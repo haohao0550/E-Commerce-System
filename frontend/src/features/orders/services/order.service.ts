@@ -15,7 +15,7 @@ export interface CreateOrderItemInput {
 }
 
 export interface CreateOrderInput {
-  paymentMethod?: 'COD' | 'VNPAY' | 'MOMO';
+  paymentMethod?: 'COD' | 'MOMO' | 'STRIPE';
   shippingAddress: ShippingAddressInput;
   couponId?: string;
   note?: string;
@@ -90,6 +90,15 @@ export interface CreateMomoPaymentResponse {
   deeplink: string;
 }
 
+export interface CreateStripePaymentResponse {
+  orderId: string;
+  checkoutSessionId: string;
+  paymentIntentId: string | null;
+  checkoutUrl: string;
+  amount: number;
+  currency: string;
+}
+
 class OrderService {
   async createOrder(data: CreateOrderInput): Promise<Order> {
     const { callApi } = useApiStore.getState();
@@ -100,6 +109,19 @@ class OrderService {
   async createMomoPayment(orderId: string, description?: string): Promise<CreateMomoPaymentResponse> {
     const { callApi } = useApiStore.getState();
     const response = await callApi<CreateMomoPaymentResponse>(`/payment/momo/create/${orderId}`, {
+      method: 'POST',
+      body: {
+        description: description ?? undefined,
+      },
+      auth: true,
+    });
+
+    return response.data;
+  }
+
+  async createStripePayment(orderId: string, description?: string): Promise<CreateStripePaymentResponse> {
+    const { callApi } = useApiStore.getState();
+    const response = await callApi<CreateStripePaymentResponse>(`/payment/stripe/create/${orderId}`, {
       method: 'POST',
       body: {
         description: description ?? undefined,
