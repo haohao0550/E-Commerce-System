@@ -64,7 +64,7 @@ export default function UserProductDetailPage() {
   const [province, setProvince] = useState('');
   const [ward, setWard] = useState('');
   const [street, setStreet] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY' | 'MOMO'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'MOMO' | 'STRIPE'>('COD');
   const [note, setNote] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState('');
@@ -352,7 +352,7 @@ export default function UserProductDetailPage() {
     setIsSubmittingOrder(true);
     try {
       const orderPayload = {
-        paymentMethod: paymentMethod.toUpperCase() as 'COD' | 'VNPAY' | 'MOMO',
+        paymentMethod: paymentMethod.toUpperCase() as 'COD' | 'MOMO' | 'STRIPE',
         shippingAddress: {
           fullName: fullName.trim(),
           phone: phone.trim(),
@@ -391,6 +391,17 @@ export default function UserProductDetailPage() {
           return
         }
       }
+
+      if (paymentMethod === 'STRIPE') {
+        const stripeResponse = await orderService.createStripePayment(newOrder.id, 'Product purchase');
+        await refreshCart();
+
+        if (stripeResponse?.checkoutUrl) {
+          window.location.href = stripeResponse.checkoutUrl;
+          return;
+        }
+      }
+        
 
       setOrderSuccessId(newOrder.id);
       showToast('Order created successfully! Awaiting payment.', 'success');
@@ -505,7 +516,7 @@ export default function UserProductDetailPage() {
                 {product.name}
               </h3>
               <div className="flex items-center gap-4 pt-1">
-                <p className="text-3xl font-display font-black text-black tracking-tight font-mono">
+                <p className="text-3xl font-black text-black tracking-tight font-mono">
                   {formatMoney(displayPrice)}
                 </p>
 
@@ -791,7 +802,7 @@ export default function UserProductDetailPage() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-screen w-full sm:w-[500px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden text-black font-sans"
+              className="fixed top-0 right-0 h-screen w-full sm:w-125 bg-white shadow-2xl z-50 flex flex-col overflow-hidden text-black font-sans"
             >
               {/* Header */}
               <header className="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-low">
@@ -868,7 +879,7 @@ export default function UserProductDetailPage() {
 
                     {/* Item Card Review */}
                     <div className="flex gap-4 p-4 bg-surface-low border border-outline-variant/10 rounded-xl">
-                      <div className="w-16 h-16 bg-white rounded-lg overflow-hidden border border-outline-variant/10 flex-shrink-0">
+                      <div className="w-16 h-16 bg-white rounded-lg overflow-hidden border border-outline-variant/10 shrink-0">
                         <img src={images[0]} alt={product.name} className="w-24 h-16 object-cover" />
                       </div>
                       <div className="flex-1 text-sm">
@@ -1003,6 +1014,17 @@ export default function UserProductDetailPage() {
                         >
                           <QrCode className="w-6 h-6 text-pink-600" />
                           <span className="text-xs uppercase text-pink-600">MOMO</span>
+                          </button>
+                          <button
+                          type="button"
+                          onClick={() => setPaymentMethod('STRIPE')}
+                          className={`flex flex-col items-center justify-center p-3 border rounded-sm gap-1.5 transition-all cursor-pointer ${paymentMethod === 'STRIPE'
+                              ? 'border-blue-600 bg-blue-50 font-bold shadow-sm'
+                              : 'border-outline-variant/30 hover:border-black/50'
+                            }`}
+                        >
+                          <CreditCard className="w-6 h-6 text-blue-600" />
+                          <span className="text-xs uppercase text-blue-600">STRIPE</span>
                         </button>
                       </div>
                     </div>
@@ -1062,7 +1084,7 @@ export default function UserProductDetailPage() {
                                 type="button"
                                 onClick={() => handleApplyCoupon(coupon.code)}
                                 disabled={isValidatingCoupon}
-                                className={`group relative flex min-h-[92px] w-full overflow-hidden rounded-xl border text-left shadow-sm transition-all hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70 ${isSelected
+                                className={`group relative flex min-h-23 w-full overflow-hidden rounded-xl border text-left shadow-sm transition-all hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70 ${isSelected
                                     ? 'border-emerald-300 bg-emerald-50'
                                     : 'border-outline-variant/30 bg-white'
                                   }`}

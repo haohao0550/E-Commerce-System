@@ -9,6 +9,7 @@ import { requestLogger } from '@/shared/middlewares/request-logger.middleware.js
 import { errorHandler } from '@/shared/middlewares/error-handler.middleware.js';
 import { corsMiddleware } from './shared/middlewares/cors.middleware.js';
 import cookieParser from 'cookie-parser';
+import { paymentStripeController } from './modules/payment-stripe/index.js';
 
 const app = express();
 
@@ -17,6 +18,13 @@ app.use(cookieParser());
 app.use(helmet());
 app.use(correlationID);
 app.use(requestLogger);
+
+app.post(
+  '/api/v1/payment/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  paymentStripeController.handleWebhook
+)
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(globalLimiter);
