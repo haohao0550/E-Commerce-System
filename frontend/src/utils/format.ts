@@ -4,7 +4,7 @@ export const formatUserName = (name?: string | null, email?: string) => {
 
 export const formatMoney = (
   amount: number | string,
-  currency: 'VND' | 'đ' = 'đ'
+  currency: 'VND' | 'vnd' = 'vnd'
 ) => {
   const value = Number(amount || 0);
 

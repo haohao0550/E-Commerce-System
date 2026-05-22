@@ -17,14 +17,14 @@ const cacheKeys = ['category', 'categorySlug', 'categoryById'];
 router.get(
     '/',
     auditLog('category.getAllCategories'),
-    cacheMiddleware('category', 60),
+    cacheMiddleware((req) => `category:${req.originalUrl}`, 60),
     categoriesController.getAll,
 );
 
 router.get(
     '/slug/:slug',
     auditLog('category.getBySlug'),
-    cacheMiddleware('categorySlug', 60),
+    cacheMiddleware((req) => `categorySlug:${req.params.slug}`, 60),
     categoriesController.getBySlug,
 );
 
@@ -32,7 +32,7 @@ router.get(
     '/:id',
     auditLog('category.getById'),
     validateParams(categoryIdSchema),
-    cacheMiddleware('categoryById', 60),
+    cacheMiddleware((req) => `categoryById:${req.params.id}`, 60),
     categoriesController.getById,
 );
 

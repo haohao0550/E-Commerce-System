@@ -13,13 +13,13 @@ import cookieParser from 'cookie-parser';
 const app = express();
 
 app.use(corsMiddleware);
-app.use(globalLimiter);
 app.use(cookieParser());
 app.use(helmet());
 app.use(correlationID);
 app.use(requestLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(globalLimiter);
 setupSwagger(app);
 app.use('/api/v1', router);
 app.use(errorHandler);
